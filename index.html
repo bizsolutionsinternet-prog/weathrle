@@ -4,110 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WEATHRLE 🌍 Guess the Daily High</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,300&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --bg: #0c1021;
-            --bg2: #141829;
-            --surface: rgba(255,255,255,0.04);
-            --surface-hover: rgba(255,255,255,0.07);
-            --border: rgba(255,255,255,0.08);
-            --border-active: rgba(255,255,255,0.18);
-            --text: #e8e6f0;
-            --text-dim: rgba(232,230,240,0.4);
-            --text-mid: rgba(232,230,240,0.65);
-            --accent: #fbbf24;
-            --accent-dim: rgba(251,191,36,0.12);
-            --accent-glow: rgba(251,191,36,0.25);
-            --green: #34d399;
-            --green-dim: rgba(52,211,153,0.12);
-            --yellow: #fbbf24;
-            --yellow-dim: rgba(251,191,36,0.12);
-            --red: #f87171;
-            --red-dim: rgba(248,113,113,0.12);
-            --radius: 16px;
+            --bg: #f9fafb;
+            --bg2: #ffffff;
+            --surface: #ffffff;
+            --surface-hover: #f3f4f6;
+            --border: #e5e7eb;
+            --border-active: #d1d5db;
+            --text: #1f2937;
+            --text-dim: #6b7280;
+            --text-mid: #4b5563;
+            --accent: #f59e0b;
+            --accent-dim: #fef3c7;
+            --accent-glow: rgba(245,158,11,0.2);
+            --green: #10b981;
+            --green-dim: #d1fae5;
+            --yellow: #f59e0b;
+            --yellow-dim: #fef3c7;
+            --red: #ef4444;
+            --red-dim: #fee2e2;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
-        }
-
-        /* ── Animated sky canvas ── */
-        #sky-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
+            -webkit-font-smoothing: antialiased;
         }
 
         .app {
-            position: relative;
-            z-index: 1;
             width: 100%;
-            max-width: 420px;
+            max-width: 480px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0 18px 80px;
+            padding: 0 20px 40px;
         }
 
         /* ── Top Bar ── */
         .top-bar {
-            width: 100vw;
-            padding: 12px 20px;
+            width: 100%;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: var(--surface);
             border-bottom: 1px solid var(--border);
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 500;
             color: var(--text-dim);
+            margin-bottom: 24px;
         }
         .top-bar .loc { display: flex; align-items: center; gap: 6px; }
         .top-bar .loc .pulse-dot {
-            width: 5px; height: 5px;
+            width: 6px; height: 6px;
             background: var(--green);
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        .top-bar .loc-name { color: var(--text-mid); font-weight: 600; }
-        .top-bar .loc-weather { color: var(--text); font-weight: 700; font-size: 0.8rem; }
-        .top-bar .right-info { text-align: right; line-height: 1.5; }
+        .top-bar .loc-name { color: var(--text); font-weight: 600; }
+        .top-bar .loc-weather { color: var(--text); font-weight: 600; font-size: 0.85rem; }
+        .top-bar .right-info { text-align: right; line-height: 1.4; }
 
         /* ── Header ── */
         .brand {
-            margin-top: 32px;
+            margin-top: 20px;
             text-align: center;
         }
         .brand h1 {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 2.6rem;
+            font-size: 2.2rem;
             font-weight: 800;
             letter-spacing: -1px;
-            background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text);
         }
         .brand .tagline {
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 3.5px;
+            letter-spacing: 2px;
             color: var(--text-dim);
             margin-top: 6px;
             font-weight: 500;
@@ -119,18 +106,19 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            margin: 22px 0 8px;
+            margin: 24px 0 8px;
             width: 100%;
         }
         .unit-toggle {
             display: flex;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
         .unit-btn {
-            padding: 7px 16px;
+            padding: 8px 18px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.75rem;
             font-weight: 700;
@@ -140,22 +128,23 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .unit-btn.active { background: var(--accent); color: #000; }
-        .unit-btn:not(.active):hover { background: var(--surface-hover); color: var(--text-mid); }
+        .unit-btn.active { background: var(--accent); color: #fff; }
+        .unit-btn:not(.active):hover { background: var(--surface-hover); color: var(--text); }
 
         .streak-badge {
             display: flex;
             align-items: center;
-            gap: 5px;
-            padding: 7px 14px;
+            gap: 6px;
+            padding: 8px 16px;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 0.75rem;
             font-weight: 600;
-            color: var(--text-mid);
+            color: var(--text);
+            box-shadow: var(--shadow);
         }
-        .streak-badge .fire { font-size: 0.85rem; }
+        .streak-badge .fire { font-size: 0.9rem; }
         .streak-badge .streak-num {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 800;
@@ -163,12 +152,12 @@
         }
 
         .section-label {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             color: var(--text-dim);
             font-weight: 600;
-            margin: 18px 0 14px;
+            margin: 24px 0 16px;
             text-align: center;
         }
 
@@ -178,24 +167,27 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 18px 20px;
-            margin-bottom: 10px;
-            transition: all 0.35s ease;
-            animation: slideUp 0.45s ease-out backwards;
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.4s ease-out backwards;
         }
         .card:nth-child(1) { animation-delay: 0.05s; }
-        .card:nth-child(2) { animation-delay: 0.15s; }
-        .card:nth-child(3) { animation-delay: 0.25s; }
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.15s; }
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(12px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .card:hover { box-shadow: var(--shadow-lg); }
 
         .card.revealed.exact  { border-color: var(--accent); background: var(--accent-dim); }
         .card.revealed.close  { border-color: var(--green); background: var(--green-dim); }
         .card.revealed.warm   { border-color: var(--yellow); background: var(--yellow-dim); }
         .card.revealed.off    { border-color: var(--red); background: var(--red-dim); }
-        .card.revealed.far    { border-color: var(--border); }
+        .card.revealed.far    { border-color: var(--border); background: var(--surface-hover); }
 
         .card-top {
             display: flex;
@@ -205,12 +197,12 @@
         .city-id {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             min-width: 0;
             flex: 1;
         }
         .flag {
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             line-height: 1;
             flex-shrink: 0;
         }
@@ -218,34 +210,34 @@
         .city-text .name {
             font-weight: 700;
             font-size: 1rem;
+            color: var(--text);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             display: block;
         }
-        .city-text .country-code {
-            font-size: 0.65rem;
+        .city-text .country-name {
+            font-size: 0.75rem;
             color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
             font-weight: 500;
-            margin-top: 1px;
+            margin-top: 2px;
         }
 
         .temp-input-wrap {
             display: flex;
             align-items: center;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 6px 12px;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 14px;
             gap: 2px;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
             flex-shrink: 0;
         }
         .temp-input-wrap:focus-within {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-dim);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-glow);
         }
         .temp-input {
             background: none;
@@ -253,17 +245,17 @@
             outline: none;
             color: var(--text);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 1.4rem;
-            font-weight: 800;
+            font-size: 1.3rem;
+            font-weight: 700;
             width: 60px;
             text-align: right;
         }
-        .temp-input::placeholder { color: rgba(255,255,255,0.15); }
+        .temp-input::placeholder { color: #d1d5db; }
         .temp-input:disabled { opacity: 0.6; }
         .deg {
             font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 1.1rem;
+            font-weight: 600;
+            font-size: 1rem;
             color: var(--text-dim);
         }
 
@@ -272,18 +264,18 @@
             max-height: 0;
             opacity: 0;
             overflow: hidden;
-            transition: all 0.5s ease;
+            transition: all 0.4s ease;
         }
         .card-reveal.show {
-            max-height: 80px;
+            max-height: 100px;
             opacity: 1;
-            margin-top: 12px;
+            margin-top: 14px;
         }
         .reveal-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
         }
         .reveal-actual {
             font-weight: 700;
@@ -291,57 +283,61 @@
         }
         .reveal-detail {
             color: var(--text-mid);
-            font-size: 0.72rem;
+            font-size: 0.75rem;
         }
         .diff-pill {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
-            padding: 4px 10px;
+            padding: 5px 12px;
             border-radius: 8px;
             white-space: nowrap;
         }
-        .diff-pill.exact { background: var(--accent); color: #000; }
-        .diff-pill.close { background: var(--green); color: #000; }
-        .diff-pill.warm  { background: var(--yellow); color: #000; }
+        .diff-pill.exact { background: var(--accent); color: #fff; }
+        .diff-pill.close { background: var(--green); color: #fff; }
+        .diff-pill.warm  { background: var(--yellow); color: #fff; }
         .diff-pill.off   { background: var(--red); color: #fff; }
-        .diff-pill.far   { background: rgba(255,255,255,0.1); color: var(--text-dim); }
+        .diff-pill.far   { background: #e5e7eb; color: var(--text-mid); }
 
         /* Hint row */
         .hint-row {
             display: flex;
             align-items: center;
             gap: 6px;
-            margin-top: 6px;
+            margin-top: 8px;
         }
         .hint-tag {
-            font-size: 0.65rem;
-            padding: 3px 8px;
+            font-size: 0.7rem;
+            padding: 4px 10px;
             border-radius: 6px;
-            background: rgba(255,255,255,0.06);
+            background: var(--bg);
             color: var(--text-mid);
             font-weight: 500;
+            border: 1px solid var(--border);
         }
 
         /* ── Submit ── */
         .btn-go {
             width: 100%;
-            margin-top: 18px;
-            padding: 17px;
+            margin-top: 20px;
+            padding: 16px;
             border: none;
-            border-radius: 14px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 800;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             cursor: pointer;
-            transition: all 0.25s;
-            background: linear-gradient(135deg, var(--accent), #f59e0b);
-            color: #000;
-            box-shadow: 0 6px 24px rgba(251,191,36,0.2);
+            transition: all 0.2s;
+            background: var(--accent);
+            color: #fff;
+            box-shadow: var(--shadow-lg);
         }
-        .btn-go:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(251,191,36,0.3); }
+        .btn-go:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 6px 12px rgba(245,158,11,0.2);
+        }
         .btn-go:active { transform: translateY(0); }
 
         /* ── Results Area ── */
@@ -349,64 +345,91 @@
             display: none;
             width: 100%;
             text-align: center;
-            animation: fadeUp 0.5s ease;
+            animation: fadeUp 0.4s ease;
         }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
         .emoji-row {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            margin: 8px 0 20px;
+            gap: 14px;
+            margin: 10px 0 24px;
         }
         .emoji-tile {
             font-size: 2.8rem;
-            animation: pop 0.35s cubic-bezier(0.175,0.885,0.32,1.275) backwards;
+            animation: pop 0.3s cubic-bezier(0.175,0.885,0.32,1.275) backwards;
         }
         .emoji-tile:nth-child(1) { animation-delay: 0.1s; }
-        .emoji-tile:nth-child(2) { animation-delay: 0.3s; }
-        .emoji-tile:nth-child(3) { animation-delay: 0.5s; }
-        @keyframes pop { from{opacity:0;transform:scale(0.2)} to{opacity:1;transform:scale(1)} }
+        .emoji-tile:nth-child(2) { animation-delay: 0.25s; }
+        .emoji-tile:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pop { from{opacity:0;transform:scale(0.3)} to{opacity:1;transform:scale(1)} }
 
         .legend {
-            display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
-            margin-bottom: 22px;
+            display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+            margin-bottom: 24px;
         }
         .legend span {
-            font-size: 0.62rem; color: var(--text-dim);
-            display: flex; align-items: center; gap: 4px;
+            font-size: 0.7rem; color: var(--text-dim);
+            display: flex; align-items: center; gap: 5px;
+            font-weight: 500;
         }
-        .legend .dot { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+        .legend .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 
         .btn-copy {
             width: 100%;
-            padding: 15px;
-            border: 1px solid var(--border);
-            border-radius: 14px;
+            padding: 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
             background: var(--surface);
             color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
             font-size: 0.85rem;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 0.5px;
             cursor: pointer;
             transition: all 0.2s;
+            box-shadow: var(--shadow);
         }
-        .btn-copy:hover { background: var(--surface-hover); border-color: var(--border-active); }
+        .btn-copy:hover { 
+            background: var(--surface-hover); 
+            border-color: var(--border-active);
+            transform: translateY(-1px);
+        }
 
         /* ── Countdown ── */
         .countdown {
-            margin-top: 18px;
-            font-size: 0.7rem;
+            margin-top: 20px;
+            font-size: 0.75rem;
             color: var(--text-dim);
             text-align: center;
         }
         .countdown .time {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
-            color: var(--text-mid);
-            font-size: 0.85rem;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            width: 100%;
+            max-width: 480px;
+            padding: 32px 20px;
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.7rem;
+            line-height: 1.6;
+            color: var(--text-dim);
+            border-top: 1px solid var(--border);
+        }
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer a:hover {
+            text-decoration: underline;
         }
 
         .hidden { display: none !important; }
@@ -421,8 +444,6 @@
     </style>
 </head>
 <body>
-
-<canvas id="sky-canvas"></canvas>
 
 <div class="top-bar">
     <div class="loc">
@@ -466,68 +487,11 @@
     </div>
 </div>
 
+<div class="footer">
+    Built with ❤️ by a dad, environmental engineer and climate advocate. I might monetize this one day to cover costs, but for now: <a href="https://www.rainforest-alliance.org/" target="_blank" rel="noopener">Support Rainforest Alliance</a>
+</div>
+
 <script>
-// ──────────────────────────────────────────
-// Sky background — gentle floating particles
-// ──────────────────────────────────────────
-(function() {
-    const c = document.getElementById('sky-canvas');
-    const ctx = c.getContext('2d');
-    let w, h, particles = [];
-
-    function resize() {
-        w = c.width = window.innerWidth;
-        h = c.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    for (let i = 0; i < 50; i++) {
-        particles.push({
-            x: Math.random() * w,
-            y: Math.random() * h,
-            r: Math.random() * 1.5 + 0.5,
-            dx: (Math.random() - 0.5) * 0.3,
-            dy: (Math.random() - 0.5) * 0.2,
-            o: Math.random() * 0.3 + 0.05
-        });
-    }
-
-    function draw() {
-        ctx.clearRect(0, 0, w, h);
-
-        // Subtle gradient glow
-        const g1 = ctx.createRadialGradient(w * 0.7, h * 0.2, 0, w * 0.7, h * 0.2, w * 0.5);
-        g1.addColorStop(0, 'rgba(251,191,36,0.04)');
-        g1.addColorStop(1, 'transparent');
-        ctx.fillStyle = g1;
-        ctx.fillRect(0, 0, w, h);
-
-        const g2 = ctx.createRadialGradient(w * 0.2, h * 0.8, 0, w * 0.2, h * 0.8, w * 0.4);
-        g2.addColorStop(0, 'rgba(99,102,241,0.04)');
-        g2.addColorStop(1, 'transparent');
-        ctx.fillStyle = g2;
-        ctx.fillRect(0, 0, w, h);
-
-        particles.forEach(p => {
-            p.x += p.dx;
-            p.y += p.dy;
-            if (p.x < 0) p.x = w;
-            if (p.x > w) p.x = 0;
-            if (p.y < 0) p.y = h;
-            if (p.y > h) p.y = 0;
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255,255,255,${p.o})`;
-            ctx.fill();
-        });
-
-        requestAnimationFrame(draw);
-    }
-    draw();
-})();
-
 // ──────────────────────────────────────────
 // Constants & State
 // ──────────────────────────────────────────
@@ -547,7 +511,7 @@ const WMO = {
 };
 function wmo(code) { return WMO[code] || {i:"🌤️",d:"No data"}; }
 
-// Country name lookup for common codes
+// Extended country name lookup
 const COUNTRY_NAMES = {
     US:"United States",GB:"United Kingdom",FR:"France",DE:"Germany",BR:"Brazil",
     JP:"Japan",CN:"China",IN:"India",AU:"Australia",CA:"Canada",MX:"Mexico",
@@ -559,8 +523,40 @@ const COUNTRY_NAMES = {
     BD:"Bangladesh",NZ:"New Zealand",IE:"Ireland",AT:"Austria",CH:"Switzerland",
     CZ:"Czech Republic",HU:"Hungary",RO:"Romania",UA:"Ukraine",SA:"Saudi Arabia",
     AE:"UAE",IL:"Israel",KE:"Kenya",GH:"Ghana",TZ:"Tanzania",MA:"Morocco",
-    TN:"Tunisia",SN:"Senegal",CI:"Ivory Coast",CM:"Cameroon"
+    TN:"Tunisia",SN:"Senegal",CI:"Ivory Coast",CM:"Cameroon",ET:"Ethiopia",
+    UG:"Uganda",ZW:"Zimbabwe",BW:"Botswana",NA:"Namibia",MZ:"Mozambique",
+    AO:"Angola",ZM:"Zambia",MW:"Malawi",MG:"Madagascar",MU:"Mauritius",
+    RE:"Réunion",SC:"Seychelles",DZ:"Algeria",LY:"Libya",SD:"Sudan",
+    SO:"Somalia",DJ:"Djibouti",ER:"Eritrea",SS:"South Sudan",RW:"Rwanda",
+    BI:"Burundi",TD:"Chad",CF:"Central African Republic",GA:"Gabon",
+    CG:"Republic of the Congo",CD:"DR Congo",ST:"São Tomé and Príncipe",
+    GQ:"Equatorial Guinea",BJ:"Benin",TG:"Togo",SL:"Sierra Leone",LR:"Liberia",
+    GN:"Guinea",GW:"Guinea-Bissau",GM:"Gambia",MR:"Mauritania",ML:"Mali",
+    BF:"Burkina Faso",NE:"Niger",LB:"Lebanon",JO:"Jordan",SY:"Syria",IQ:"Iraq",
+    IR:"Iran",KW:"Kuwait",QA:"Qatar",BH:"Bahrain",OM:"Oman",YE:"Yemen",
+    AF:"Afghanistan",UZ:"Uzbekistan",KZ:"Kazakhstan",TM:"Turkmenistan",
+    KG:"Kyrgyzstan",TJ:"Tajikistan",AM:"Armenia",AZ:"Azerbaijan",GE:"Georgia",
+    NP:"Nepal",BT:"Bhutan",LK:"Sri Lanka",MV:"Maldives",MM:"Myanmar",
+    LA:"Laos",KH:"Cambodia",SG:"Singapore",BN:"Brunei",TL:"Timor-Leste",
+    PG:"Papua New Guinea",FJ:"Fiji",SB:"Solomon Islands",VU:"Vanuatu",
+    NC:"New Caledonia",PF:"French Polynesia",WS:"Samoa",TO:"Tonga",
+    KI:"Kiribati",TV:"Tuvalu",NR:"Nauru",PW:"Palau",FM:"Micronesia",
+    MH:"Marshall Islands",GU:"Guam",MP:"Northern Mariana Islands",
+    AS:"American Samoa",CK:"Cook Islands",NU:"Niue",TK:"Tokelau",
+    WF:"Wallis and Futuna",SK:"Slovakia",SI:"Slovenia",HR:"Croatia",
+    BA:"Bosnia and Herzegovina",RS:"Serbia",ME:"Montenegro",MK:"North Macedonia",
+    AL:"Albania",XK:"Kosovo",BG:"Bulgaria",MD:"Moldova",BY:"Belarus",
+    LT:"Lithuania",LV:"Latvia",EE:"Estonia",IS:"Iceland",MT:"Malta",
+    CY:"Cyprus",LU:"Luxembourg",MC:"Monaco",LI:"Liechtenstein",AD:"Andorra",
+    SM:"San Marino",VA:"Vatican City",SV:"El Salvador",GT:"Guatemala",
+    HN:"Honduras",NI:"Nicaragua",CR:"Costa Rica",PA:"Panama",BZ:"Belize",
+    CU:"Cuba",JM:"Jamaica",HT:"Haiti",DO:"Dominican Republic",PR:"Puerto Rico",
+    TT:"Trinidad and Tobago",BB:"Barbados",GD:"Grenada",LC:"Saint Lucia",
+    VC:"Saint Vincent",AG:"Antigua and Barbuda",DM:"Dominica",KN:"Saint Kitts and Nevis",
+    BS:"Bahamas",UY:"Uruguay",PY:"Paraguay",BO:"Bolivia",EC:"Ecuador",
+    VE:"Venezuela",GY:"Guyana",SR:"Suriname",GF:"French Guiana",FK:"Falkland Islands"
 };
+
 function countryName(code) {
     if (!code) return "";
     return COUNTRY_NAMES[code.toUpperCase()] || code.toUpperCase();
@@ -569,6 +565,7 @@ function countryName(code) {
 let unit = localStorage.getItem('weathrle_unit') || 'C';
 let cities = [], weather = [];
 let localData = null;
+let localCity = "";
 let played = false;
 const today = new Date().toDateString();
 
@@ -577,12 +574,22 @@ function f2c(f) { return Math.round((f - 32) * 5/9); }
 function dT(c) { return unit === 'F' ? c2f(c) : c; }
 function uL() { return unit === 'F' ? '°F' : '°C'; }
 
+// Improved flag function with fallback
 function flag(cc) {
     if (!cc || cc.length !== 2) return "🌍";
     const upper = cc.toUpperCase();
-    const cp1 = 0x1F1E6 - 65 + upper.charCodeAt(0);
-    const cp2 = 0x1F1E6 - 65 + upper.charCodeAt(1);
-    return String.fromCodePoint(cp1, cp2);
+    
+    // Some country codes don't have flag emojis, use fallback
+    const noFlagCodes = ['AQ', 'BV', 'HM', 'GS', 'TF', 'UM'];
+    if (noFlagCodes.includes(upper)) return "🌍";
+    
+    try {
+        const cp1 = 0x1F1E6 - 65 + upper.charCodeAt(0);
+        const cp2 = 0x1F1E6 - 65 + upper.charCodeAt(1);
+        return String.fromCodePoint(cp1, cp2);
+    } catch {
+        return "🌍";
+    }
 }
 
 function setUnit(u) {
@@ -605,7 +612,7 @@ function refreshLocalBar() {
     if (!localData) return;
     const d = localData;
     document.getElementById('local-weather').innerHTML =
-        `<span class="loc-weather">${d.icon} ${dT(d.min)}°/${dT(d.max)}${uL()}</span><br><span style="font-size:0.68rem">${d.desc}</span>`;
+        `<span class="loc-weather">${d.icon} ${dT(d.min)}°/${dT(d.max)}${uL()}</span><br><span style="font-size:0.7rem">${d.desc}</span>`;
 }
 
 // ── PRNG ──
@@ -660,29 +667,22 @@ function climateHint(lat) {
     return "🧊 Polar";
 }
 function hemisphereHint(lat) {
-    return parseFloat(lat) >= 0 ? "🌐 Northern Hemisphere" : "🌐 Southern Hemisphere";
+    return parseFloat(lat) >= 0 ? "🌐 Northern" : "🌐 Southern";
 }
 
 // ── Input: block "e", allow only digits and minus ──
 function sanitizeInput(el) {
     el.addEventListener('keydown', function(e) {
-        // Allow: backspace, delete, tab, escape, enter, arrows
         if ([8, 9, 27, 13, 46, 37, 38, 39, 40].includes(e.keyCode)) return;
-        // Allow minus only at start
         if (e.key === '-' && el.value === '' && el.selectionStart === 0) return;
-        // Allow digits
         if (e.key >= '0' && e.key <= '9') return;
-        // Block everything else (including 'e', 'E', '.', '+')
         e.preventDefault();
     });
-    // Also block paste of non-numeric
     el.addEventListener('input', function() {
         el.value = el.value.replace(/[^0-9\-]/g, '');
-        // Only allow minus at start
         if (el.value.indexOf('-') > 0) {
             el.value = el.value.replace(/-/g, '');
         }
-        // Prevent multiple minuses
         if ((el.value.match(/-/g) || []).length > 1) {
             el.value = '-' + el.value.replace(/-/g, '');
         }
@@ -705,12 +705,19 @@ async function init() {
         try {
             const r = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1`);
             const j = await r.json();
-            if (j.results?.[0]) name = j.results[0].name;
+            if (j.results?.[0]) {
+                name = j.results[0].name;
+                if (j.results[0].admin1) name += ", " + j.results[0].admin1;
+                localCity = name;
+                localStorage.setItem('weathrle_local_city', localCity);
+            }
         } catch {}
         document.getElementById('local-info').innerHTML = `<span class="pulse-dot"></span> <span class="loc-name">📍 ${name}</span>`;
         refreshLocalBar();
     }, () => {
         document.getElementById('local-info').innerHTML = '📍 Enable GPS for local weather';
+        const saved = localStorage.getItem('weathrle_local_city');
+        if (saved) localCity = saved;
     });
 
     // Already played?
@@ -741,7 +748,7 @@ async function init() {
                         <span class="flag">${flag(city.country)}</span>
                         <div class="city-text">
                             <span class="name">${city.name}</span>
-                            <span class="country-code">${countryName(city.country)}</span>
+                            <span class="country-name">${countryName(city.country)}</span>
                         </div>
                     </div>
                     <div class="temp-input-wrap">
@@ -848,7 +855,7 @@ function submitGuesses() {
     }));
     localStorage.setItem('weathrle_cities', JSON.stringify(saved));
 
-    setTimeout(() => showResults(score), 1000);
+    setTimeout(() => showResults(score), 800);
 }
 
 function restoreResults() {
@@ -877,7 +884,7 @@ function restoreResults() {
                     <span class="flag">${flag(c.country)}</span>
                     <div class="city-text">
                         <span class="name">${c.name}</span>
-                        <span class="country-code">${countryName(c.country)}</span>
+                        <span class="country-name">${countryName(c.country)}</span>
                     </div>
                 </div>
                 <div class="temp-input-wrap">
@@ -919,7 +926,7 @@ function showResults(score) {
         <span><span class="dot" style="background:var(--green)"></span> ±2°</span>
         <span><span class="dot" style="background:var(--yellow)"></span> ±5°</span>
         <span><span class="dot" style="background:var(--red)"></span> ±10°</span>
-        <span><span class="dot" style="background:rgba(255,255,255,0.12)"></span> >10°</span>
+        <span><span class="dot" style="background:#e5e7eb"></span> >10°</span>
     `;
 
     // Countdown to midnight
@@ -945,7 +952,15 @@ function copyScore() {
     const score = localStorage.getItem('weathrle_score') || '';
     const streak = getStreak();
     const msg = score === '🌟🌟🌟' ? '🏆 Perfect score!' : 'My WEATHRLE today:';
-    navigator.clipboard.writeText(`${msg}\n\n${score}\n\n🔥 Streak: ${streak}\nhttps://weathrle.com`).then(() => {
+    
+    // Include local city info if available
+    const savedCity = localStorage.getItem('weathrle_local_city') || localCity;
+    let locationLine = '';
+    if (savedCity && localData) {
+        locationLine = `\n📍 ${savedCity}: ${dT(localData.min)}°-${dT(localData.max)}${uL()}`;
+    }
+    
+    navigator.clipboard.writeText(`${msg}\n\n${score}${locationLine}\n\n🔥 Streak: ${streak}\nhttps://weathrle.com`).then(() => {
         const btn = document.querySelector('.btn-copy');
         btn.textContent = 'Copied! ✅';
         setTimeout(() => btn.textContent = 'Copy Score 📋', 2000);
@@ -956,12 +971,3 @@ init();
 </script>
 </body>
 </html>
-
-<footer class="game-footer">
-    <p>Built with ❤️ by an environmental engineer, father and hopeful climate advocate. I built WEATHRLE as a daily ritual to appreciate our planet.
-One day, I might need to monetize this site to cover its costs. But for now, if you have a moment, I'd rather you support those on the front lines of climate action.. 
-    This month, help protect our planet: 
-    <a href="https://www.rainforest-alliance.org/get-involved/?campaign=669244" target="_blank">Support Rainforest Alliance</a></p>
-</footer>
-
-
