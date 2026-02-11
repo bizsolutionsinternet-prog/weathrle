@@ -413,6 +413,90 @@
         }
         @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
+        /* ── Mobile Results Modal ── */
+        #results-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+        #results-modal-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-radius: 24px 24px 0 0;
+            padding: 24px 20px 32px;
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+            animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        @keyframes slideUpModal {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 0 auto 20px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--text-mid);
+            transition: all 0.2s;
+        }
+        .modal-close:hover {
+            background: var(--border);
+            transform: scale(1.1);
+        }
+
+        /* Hide modal on desktop, show regular results */
+        @media (min-width: 768px) {
+            #results-modal {
+                display: none !important;
+            }
+            #results-area {
+                display: block !important;
+            }
+        }
+
+        /* Hide regular results on mobile when modal is active */
+        @media (max-width: 767px) {
+            body.modal-open #results-area {
+                display: none !important;
+            }
+            body.modal-open {
+                overflow: hidden;
+            }
+        }
+
         .emoji-row {
             display: flex;
             justify-content: center;
@@ -551,8 +635,21 @@
     </div>
 </div>
 
+<!-- Mobile Results Modal -->
+<div id="results-modal" onclick="closeResultsModal(event)">
+    <div id="results-modal-content" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <button class="modal-close" onclick="closeResultsModal()" aria-label="Close">✕</button>
+        <div class="section-label">Your Score</div>
+        <div class="emoji-row" id="emoji-row-modal"></div>
+        <div class="legend" id="legend-modal"></div>
+        <button class="btn-copy" onclick="copyScore()">Copy Score 📋</button>
+        <div class="countdown" id="countdown-modal"></div>
+    </div>
+</div>
+
 <div class="footer">
-    Built with ❤️ by a dad, environmental engineer and climate advocate. I might monetize this one day to cover costs, but for now: <a href="https://www.rainforest-alliance.org/" target="_blank" rel="noopener">Support Rainforest Alliance</a>
+    Built with ❤️ by an environmental engineer and climate advocate. I might monetize this one day to cover costs, but for now: <a href="https://www.rainforest-alliance.org/" target="_blank" rel="noopener">Support Rainforest Alliance</a>
 </div>
 
 <script>
@@ -597,7 +694,7 @@ const COUNTRY_NAMES = {
     GQ:"Equatorial Guinea",BJ:"Benin",TG:"Togo",SL:"Sierra Leone",LR:"Liberia",
     GN:"Guinea",GW:"Guinea-Bissau",GM:"Gambia",MR:"Mauritania",ML:"Mali",
     BF:"Burkina Faso",NE:"Niger",LB:"Lebanon",JO:"Jordan",SY:"Syria",IQ:"Iraq",
-    IR:"Iran",KW:"Kuwait",QA:"Qatar",BH:"Bahrain",OM:"Oman",YE:"Yemen",
+    IR:"Iran",KW:"Kuwait",QA:"Qatar",BH:"Bahrain",OM:"Oman",YE:"Yemen",PS:"Palestine",
     AF:"Afghanistan",UZ:"Uzbekistan",KZ:"Kazakhstan",TM:"Turkmenistan",
     KG:"Kyrgyzstan",TJ:"Tajikistan",AM:"Armenia",AZ:"Azerbaijan",GE:"Georgia",
     NP:"Nepal",BT:"Bhutan",LK:"Sri Lanka",MV:"Maldives",MM:"Myanmar",
@@ -998,36 +1095,79 @@ function restoreResults() {
 
 function showResults(score) {
     document.getElementById('section-label').textContent = "Today's Result";
-    document.getElementById('results-area').style.display = 'block';
-
-    const row = document.getElementById('emoji-row');
-    row.innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
-
-    document.getElementById('legend').innerHTML = `
-        <span><span class="dot" style="background:var(--accent)"></span> Exact</span>
-        <span><span class="dot" style="background:var(--green)"></span> ±2°</span>
-        <span><span class="dot" style="background:var(--yellow)"></span> ±5°</span>
-        <span><span class="dot" style="background:var(--red)"></span> ±10°</span>
-        <span><span class="dot" style="background:#e5e7eb"></span> >10°</span>
-    `;
-
-    // Countdown to midnight
-    function tick() {
-        const now = new Date();
-        const midnight = new Date(now);
-        midnight.setHours(24, 0, 0, 0);
-        const diff = midnight - now;
-        const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-        const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-        const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-        document.getElementById('countdown').innerHTML = `Next challenge in <span class="time">${h}:${m}:${s}</span>`;
+    
+    // Check if mobile
+    const isMobile = window.innerWidth < 768;
+    
+    if (isMobile) {
+        // Show modal on mobile
+        document.body.classList.add('modal-open');
+        document.getElementById('results-modal').style.display = 'block';
+        
+        const rowModal = document.getElementById('emoji-row-modal');
+        rowModal.innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
+        
+        document.getElementById('legend-modal').innerHTML = `
+            <span><span class="dot" style="background:var(--accent)"></span> Exact</span>
+            <span><span class="dot" style="background:var(--green)"></span> ±2°</span>
+            <span><span class="dot" style="background:var(--yellow)"></span> ±5°</span>
+            <span><span class="dot" style="background:var(--red)"></span> ±10°</span>
+            <span><span class="dot" style="background:#e5e7eb"></span> >10°</span>
+        `;
+        
+        // Countdown for modal
+        function tickModal() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0);
+            const diff = midnight - now;
+            const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+            const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+            const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+            document.getElementById('countdown-modal').innerHTML = `Next challenge in <span class="time">${h}:${m}:${s}</span>`;
+        }
+        tickModal();
+        setInterval(tickModal, 1000);
+    } else {
+        // Show regular results on desktop
+        document.getElementById('results-area').style.display = 'block';
+        
+        const row = document.getElementById('emoji-row');
+        row.innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
+        
+        document.getElementById('legend').innerHTML = `
+            <span><span class="dot" style="background:var(--accent)"></span> Exact</span>
+            <span><span class="dot" style="background:var(--green)"></span> ±2°</span>
+            <span><span class="dot" style="background:var(--yellow)"></span> ±5°</span>
+            <span><span class="dot" style="background:var(--red)"></span> ±10°</span>
+            <span><span class="dot" style="background:#e5e7eb"></span> >10°</span>
+        `;
+        
+        // Countdown for regular view
+        function tick() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0);
+            const diff = midnight - now;
+            const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+            const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+            const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+            document.getElementById('countdown').innerHTML = `Next challenge in <span class="time">${h}:${m}:${s}</span>`;
+        }
+        tick();
+        setInterval(tick, 1000);
     }
-    tick();
-    setInterval(tick, 1000);
 
     if (score === '🌟🌟🌟') {
         confetti({ particleCount: 250, spread: 100, origin: { y: 0.55 } });
     }
+}
+
+function closeResultsModal(event) {
+    // Only close if clicking on backdrop or close button
+    if (event && event.target.id !== 'results-modal' && event.type === 'click') return;
+    document.getElementById('results-modal').style.display = 'none';
+    document.body.classList.remove('modal-open');
 }
 
 function copyScore() {
@@ -1053,4 +1193,3 @@ init();
 </script>
 </body>
 </html>
-
