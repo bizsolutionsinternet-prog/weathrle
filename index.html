@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>WEATHRLE 🌍 Guess the Daily High</title>
+    <meta name="title" content="WEATHRLE — The Daily Weather Guessing Game">
+    <meta name="description" content="Can you guess the maximum temperature in 3 global locations today? The daily challenge for weather enthusiasts.">
+    <meta name="keywords" content="weathrle, weatherle, weather game, daily game, temperature guess, climate game">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://weathrle.com/">
+    <meta property="og:title" content="WEATHRLE 🌍">
+    <meta property="og:description" content="I guessed today's temperatures! Can you beat my score?">
+    <meta property="og:image" content="https://weathrle.com/og-image.jpg">
+<link rel="icon" type="image/png" href="favicon.png">
+
+<link rel="apple-touch-icon" href="favicon.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --purple-grad: linear-gradient(180deg, #3f37c9 0%, #4cc9f0 100%);
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text: #ffffff;
+            --plus-bg: #99e2b4;
+            --minus-bg: #ff9b85;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--purple-grad);
+            background-attachment: fixed;
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Minimal Local Bar */
+        .local-bar {
+            width: 100%;
+            max-width: 450px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: rgba(0,0,0,0.15);
+            box-sizing: border-box;
+        }
+
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin: 25px 0 5px;
+            text-align: center;
+        }
+
+        .guess-header { 
+            text-transform: uppercase; 
+            font-size: 0.7rem; 
+            letter-spacing: 2px; 
+            font-weight: 600; 
+            margin: 20px 0 15px;
+            opacity: 0.8;
+        }
+
+        /* Game Cards */
+        .city-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            width: 90%;
+            max-width: 380px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        .sign-btn {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+            transition: transform 0.1s;
+        }
+        .sign-btn:active { transform: scale(0.9); }
+        .sign-btn.plus { background: var(--plus-bg); color: #1b4332; }
+        .sign-btn.minus { background: var(--minus-bg); color: #641212; }
+
+        .city-info { flex-grow: 1; overflow: hidden; }
+        .city-name { font-weight: 600; font-size: 1rem; display: block; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .weather-reveal { 
+            font-size: 0.75rem; 
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.5s ease;
+            color: #fff;
+        }
+        .weather-reveal.show { max-height: 20px; opacity: 1; margin-top: 4px; }
+
+        .input-group { display: flex; align-items: center; gap: 2px; }
+        input {
+            background: transparent; border: none; color: white;
+            font-size: 1.6rem; font-weight: 800; width: 55px; text-align: right; outline: none;
+        }
+        input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        /* Submit Button */
+        .btn-submit {
+            background: linear-gradient(90deg, #ff7eb3 0%, #ff758c 100%);
+            border: none; border-radius: 50px;
+            padding: 18px; color: white;
+            font-weight: 800; font-size: 1rem;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            cursor: pointer; margin-top: 20px;
+            width: 90%; max-width: 380px;
+            box-shadow: 0 10px 20px rgba(255, 117, 140, 0.3);
+            transition: 0.3s;
+        }
+        .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        #share-area { text-align: center; display: none; width: 100%; margin-top: 20px; padding-bottom: 50px; }
+        .emoji-tile { font-size: 2.8rem; margin: 10px; display: inline-block; }
+
+        .hidden { display: none; }
+        #loading { padding: 50px; opacity: 0.7; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="local-bar">
+        <span id="local-info-text">📍 Allow GPS for local weather</span>
+        <span id="local-weather"></span>
+    </div>
+
+    <h1 class="main-title">WEATHRLE</h1>
+    
+    <div class="guess-header" id="header-text">Guess Today's Max Temp</div>
+
+    <div id="game-section" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <div id="loading">🌍 Sourcing global climates...</div>
+        <div id="challenge-list" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+        <button id="btn-submit" class="btn-submit hidden" onclick="checkResults()">Submit Guesses</button>
+    </div>
+
+    <div id="share-area">
+        <div id="emoji-container"></div>
+        <button class="btn-submit" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);" onclick="copyShare()">Copy Score 📋</button>
+    </div>
+
+    <script>
+        const CITIES_URL = 'https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json';
+        const weatherIcons = { 0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 51: "🌧️", 61: "🌧️", 71: "❄️", 95: "⚡" };
+        
+        let dailyCities = [];
+        let realData = [];
+        const todayKey = new Date().toDateString();
+
+        async function init() {
+            // 1. Geolocation
+            navigator.geolocation.getCurrentPosition(async (p) => {
+                const d = await fetchWeather(p.coords.latitude, p.coords.longitude);
+                document.getElementById('local-info-text').innerText = "📍 Your Location";
+                document.getElementById('local-weather').innerHTML = `High: ${d.max}° | Tomorrow: ${d.next}°`;
+            }, () => {
+                document.getElementById('local-info-text').innerHTML = "📍 <small>Enable GPS for local weather</small>";
+            });
+
+            // 2. Already Played?
+            if (localStorage.getItem('weathrle_final_played') === todayKey) {
+                showFinal(); return;
+            }
+
+            // 3. Load Global Challenge
+            try {
+                const res = await fetch(CITIES_URL);
+                const all = await res.json();
+                const now = new Date();
+                const seed = now.getFullYear() + now.getMonth() + now.getDate();
+
+                const listDiv = document.getElementById('challenge-list');
+                for(let i=0; i<3; i++) {
+                    const city = all[(seed * (i + 123)) % all.length];
+                    dailyCities.push(city);
+                    const data = await fetchWeather(city.lat, city.lng);
+                    realData.push(data);
+
+                    listDiv.innerHTML += `
+                        <div class="city-card">
+                            <button class="sign-btn plus" id="sign-${i}" onclick="toggleSign(${i})">+</button>
+                            <div class="city-info">
+                                <span class="city-name">${getFlagEmoji(city.country)} ${city.name}</span>
+                                <div class="weather-reveal" id="reveal-${i}"></div>
+                            </div>
+                            <div class="input-group">
+                                <input type="number" id="guess-${i}" placeholder="0" inputmode="numeric">
+                                <span style="font-weight:800; font-size:1.4rem">°</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('btn-submit').classList.remove('hidden');
+            } catch (e) {
+                document.getElementById('loading').innerText = "Connection error. Please refresh.";
+            }
+        }
+
+        function toggleSign(i) {
+            const b = document.getElementById(`sign-${i}`);
+            b.innerText = b.innerText === "+" ? "-" : "+";
+            b.className = b.innerText === "+" ? "sign-btn plus" : "sign-btn minus";
+        }
+
+        async function fetchWeather(lat, lon) {
+            try {
+                const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,weathercode&timezone=auto`);
+                const d = await r.json();
+                return { 
+                    max: Math.round(d.daily.temperature_2m_max[0]), 
+                    next: Math.round(d.daily.temperature_2m_max[1]),
+                    icon: weatherIcons[d.daily.weathercode[0]] || "🌤️"
+                };
+            } catch (e) { return { max: 0, next: 0, icon: "❓" }; }
+        }
+
+        function checkResults() {
+            let score = "";
+            for(let i=0; i<3; i++) {
+                const v = document.getElementById(`guess-${i}`).value;
+                if(v === "") return alert("Please fill all guesses!");
+                const s = document.getElementById(`sign-${i}`).innerText === "+" ? 1 : -1;
+                const guess = parseInt(v) * s;
+                const diff = Math.abs(guess - realData[i].max);
+
+                if (guess === realData[i].max) score += "🌟";
+                else if (diff <= 2) score += "🟩";
+                else if (diff <= 5) score += "🟨";
+                else if (diff <= 10) score += "🟥";
+                else score += "⬛";
+                
+                const reveal = document.getElementById(`reveal-${i}`);
+                reveal.innerHTML = `${realData[i].icon} Real High: ${realData[i].max}°C`;
+                reveal.classList.add('show');
+            }
+            localStorage.setItem('weathrle_final_played', todayKey);
+            localStorage.setItem('weathrle_final_score', score);
+            document.getElementById('btn-submit').classList.add('hidden');
+            setTimeout(showFinal, 1800);
+        }
+
+        function showFinal() {
+            document.getElementById('game-section').classList.add('hidden');
+            document.getElementById('header-text').innerText = "Today's Result";
+            document.getElementById('share-area').style.display = 'block';
+            const score = localStorage.getItem('weathrle_final_score');
+            if (score === "🌟🌟🌟") confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            document.getElementById('emoji-container').innerHTML = score.split('').map(c => `<span class="emoji-tile">${c}</span>`).join('');
+        }
+
+        function getFlagEmoji(countryCode) {
+            if (!countryCode) return "🌍";
+            return countryCode.toUpperCase().split('').map(char => String.fromCodePoint(127397 + char.charCodeAt())).join('');
+        }
+
+        function copyShare() {
+            const score = localStorage.getItem('weathrle_final_score');
+            const m = score === "🌟🌟🌟" ? "I AM A WEATHER MASTER! 👑" : "My WEATHRLE score today: 🌤️";
+            navigator.clipboard.writeText(`${m}\n\n${score}\n\nhttps://weathrle.com`);
+            alert("Copied to clipboard! 🚀");
+        }
+
+        init();
+    </script>
+</body>
+</html>
