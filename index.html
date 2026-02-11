@@ -488,7 +488,7 @@
 </div>
 
 <div class="footer">
-    Built with ❤️ by a dad, environmental engineer and climate advocate. I might monetize this one day to cover costs, but for now: <a href="https://www.rainforest-alliance.org/" target="_blank" rel="noopener">Support Rainforest Alliance</a>
+    Built with ❤️ by an environmental engineer and climate advocate. I might monetize this one day to cover costs, but for now: <a href="https://www.rainforest-alliance.org/" target="_blank" rel="noopener">Support Rainforest Alliance</a>
 </div>
 
 <script>
@@ -567,7 +567,17 @@ let cities = [], weather = [];
 let localData = null;
 let localCity = "";
 let played = false;
-const today = new Date().toDateString();
+
+// Get UTC day number (like Wordle) - days since Jan 1, 2024
+function getDayNumber() {
+    const epoch = new Date('2024-01-01T00:00:00Z');
+    const now = new Date();
+    const utcNow = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const utcEpoch = Date.UTC(epoch.getUTCFullYear(), epoch.getUTCMonth(), epoch.getUTCDate());
+    return Math.floor((utcNow - utcEpoch) / 86400000);
+}
+
+const today = getDayNumber();
 
 function c2f(c) { return Math.round(c * 9/5 + 32); }
 function f2c(f) { return Math.round((f - 32) * 5/9); }
@@ -598,7 +608,8 @@ function setUnit(u) {
     document.getElementById('btn-c').classList.toggle('active', u === 'C');
     document.getElementById('btn-f').classList.toggle('active', u === 'F');
     refreshLocalBar();
-    if (played || localStorage.getItem('weathrle_date') === today) {
+    const savedDay = parseInt(localStorage.getItem('weathrle_date') || '0');
+    if (played || savedDay === today) {
         restoreResults();
     }
 }
@@ -631,8 +642,12 @@ function haversine(a, b, c, d) {
 }
 
 function pickCities(all) {
+    // Use UTC date so everyone worldwide sees the same cities on the same day
     const n = new Date();
-    const rng = prng(n.getFullYear()*10000 + (n.getMonth()+1)*100 + n.getDate());
+    const year = n.getUTCFullYear();
+    const month = n.getUTCMonth() + 1;
+    const day = n.getUTCDate();
+    const rng = prng(year*10000 + month*100 + day);
     const valid = all.filter(c => c.country && c.lat && c.lng && c.name);
     const shuffled = valid.slice().sort(() => rng() - 0.5);
     const picked = [], used = new Set();
@@ -720,8 +735,9 @@ async function init() {
         if (saved) localCity = saved;
     });
 
-    // Already played?
-    if (localStorage.getItem('weathrle_date') === today) {
+    // Already played today?
+    const savedDay = parseInt(localStorage.getItem('weathrle_date') || '0');
+    if (savedDay === today) {
         restoreResults();
         return;
     }
@@ -832,20 +848,22 @@ function submitGuesses() {
     document.getElementById('btn-submit').classList.add('hidden');
 
     const score = emojis.join('');
-    localStorage.setItem('weathrle_date', today);
+    localStorage.setItem('weathrle_date', today.toString());
     localStorage.setItem('weathrle_score', score);
 
-    // Update streak
-    const lastDate = localStorage.getItem('weathrle_last_date');
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    // Update streak using day numbers
+    const lastDayNum = parseInt(localStorage.getItem('weathrle_last_date') || '0');
     let streak = getStreak();
-    if (lastDate === yesterday || !lastDate) {
+    if (lastDayNum === today - 1 || lastDayNum === 0) {
+        // Yesterday or first time playing
         streak++;
-    } else if (lastDate !== today) {
+    } else if (lastDayNum !== today) {
+        // Missed a day or more
         streak = 1;
     }
+    // If lastDayNum === today, don't change streak (already played today)
     localStorage.setItem('weathrle_streak', streak.toString());
-    localStorage.setItem('weathrle_last_date', today);
+    localStorage.setItem('weathrle_last_date', today.toString());
     updateStreakDisplay();
 
     const saved = cities.map((c, i) => ({
@@ -953,10 +971,10 @@ function copyScore() {
     const streak = getStreak();
     const msg = score === '🌟🌟🌟' ? '🏆 Perfect score!' : 'My WEATHRLE today:';
     
-    // Include local city info if available
-    const savedCity = localStorage.getItem('weathrle_local_city') || localCity;
+    // Only include local city info if we actually have it (user gave permission)
+    const savedCity = localStorage.getItem('weathrle_local_city');
     let locationLine = '';
-    if (savedCity && localData) {
+    if (savedCity && localData && localData.max !== 0) {
         locationLine = `\n📍 ${savedCity}: ${dT(localData.min)}°-${dT(localData.max)}${uL()}`;
     }
     
