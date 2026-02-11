@@ -7,36 +7,37 @@
     <title>WEATHRLE 🌍 Guess the Daily High</title>
     <meta name="title" content="WEATHRLE — The Daily Weather Guessing Game">
     <meta name="description" content="Can you guess the maximum temperature in 3 global locations today? The daily challenge for weather enthusiasts.">
-    <meta name="keywords" content="weathrle, weatherle, weather game, daily game, temperature guess, climate game">
 
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://weathrle.com/">
-    <meta property="og:title" content="WEATHRLE 🌍">
-    <meta property="og:description" content="I guessed today's temperatures! Can you beat my score?">
-    <meta property="og:image" content="https://weathrle.com/og-image.jpg">
-<link rel="icon" type="image/png" href="favicon.png">
-
-<link rel="apple-touch-icon" href="favicon.png">
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
-            --purple-grad: linear-gradient(180deg, #3f37c9 0%, #4cc9f0 100%);
-            --glass: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --text: #ffffff;
-            --plus-bg: #99e2b4;
-            --minus-bg: #ff9b85;
+            --bg-top: #0f0c29;
+            --bg-mid: #302b63;
+            --bg-bot: #24243e;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --text: #f0eef6;
+            --text-dim: rgba(240, 238, 246, 0.5);
+            --accent: #f7b733;
+            --accent-glow: rgba(247, 183, 51, 0.3);
+            --green: #4ade80;
+            --yellow: #facc15;
+            --red: #f87171;
+            --green-dim: rgba(74, 222, 128, 0.15);
+            --red-dim: rgba(248, 113, 113, 0.15);
+            --card-radius: 20px;
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--purple-grad);
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(160deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg-bot) 100%);
             background-attachment: fixed;
             color: var(--text);
-            margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -44,239 +45,801 @@
             overflow-x: hidden;
         }
 
-        /* Minimal Local Bar */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            z-index: 0;
+            pointer-events: none;
+        }
+        body::before {
+            width: 400px; height: 400px;
+            background: #f7b733;
+            top: -100px; right: -100px;
+            animation: floatOrb 12s ease-in-out infinite alternate;
+        }
+        body::after {
+            width: 350px; height: 350px;
+            background: #7c3aed;
+            bottom: -80px; left: -80px;
+            animation: floatOrb 15s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -30px) scale(1.15); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 16px 60px;
+        }
+
+        /* ── Local Weather Bar ── */
         .local-bar {
             width: 100%;
-            max-width: 450px;
-            padding: 12px 20px;
+            padding: 14px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 500;
-            background: rgba(0,0,0,0.15);
-            box-sizing: border-box;
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            letter-spacing: 0.3px;
+        }
+        .local-bar .local-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .local-bar .local-left .dot {
+            width: 6px; height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            display: inline-block;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .local-bar .local-details {
+            text-align: right;
+            line-height: 1.4;
+            color: var(--text-dim);
+        }
+        .local-bar .local-details .local-temp {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 0.85rem;
         }
 
+        /* ── Title ── */
         .main-title {
-            font-size: 3.5rem;
-            font-weight: 800;
-            letter-spacing: -2px;
-            margin: 25px 0 5px;
+            font-size: 3.2rem;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            margin: 28px 0 4px;
             text-align: center;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        /* ── Unit Toggle ── */
+        .unit-toggle {
+            display: flex;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: opacity 0.3s;
+        }
+        .unit-btn {
+            padding: 8px 22px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            letter-spacing: 0.5px;
+        }
+        .unit-btn.active {
+            background: var(--accent);
+            color: #000;
+        }
+        .unit-btn:not(.active):hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text);
         }
 
         .guess-header { 
             text-transform: uppercase; 
-            font-size: 0.7rem; 
-            letter-spacing: 2px; 
+            font-size: 0.65rem; 
+            letter-spacing: 2.5px; 
             font-weight: 600; 
-            margin: 20px 0 15px;
-            opacity: 0.8;
+            margin: 0 0 18px;
+            color: var(--text-dim);
         }
 
-        /* Game Cards */
+        /* ── City Cards ── */
         .city-card {
             background: var(--glass);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            border-radius: 25px;
-            padding: 12px 18px;
+            border-radius: var(--card-radius);
+            padding: 16px 18px;
             display: flex;
             align-items: center;
-            width: 90%;
-            max-width: 380px;
+            width: 100%;
             margin-bottom: 12px;
-            box-sizing: border-box;
+            transition: all 0.3s ease;
+            animation: cardIn 0.4s ease-out backwards;
         }
+        .city-card:nth-child(1) { animation-delay: 0.1s; }
+        .city-card:nth-child(2) { animation-delay: 0.25s; }
+        .city-card:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .city-card:hover { background: var(--glass-hover); }
+
+        .city-card.revealed.exact { border-color: var(--accent); box-shadow: 0 0 25px var(--accent-glow); }
+        .city-card.revealed.close { border-color: var(--green); }
+        .city-card.revealed.warm { border-color: var(--yellow); }
+        .city-card.revealed.off { border-color: var(--red); }
+        .city-card.revealed.far { border-color: rgba(255,255,255,0.1); }
 
         .sign-btn {
-            width: 44px; height: 44px;
-            border-radius: 50%;
+            width: 42px; height: 42px;
+            border-radius: 14px;
             border: none;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            color: white;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            margin-right: 15px;
+            margin-right: 14px;
             flex-shrink: 0;
-            transition: transform 0.1s;
+            transition: all 0.15s ease;
         }
         .sign-btn:active { transform: scale(0.9); }
-        .sign-btn.plus { background: var(--plus-bg); color: #1b4332; }
-        .sign-btn.minus { background: var(--minus-bg); color: #641212; }
+        .sign-btn.plus { background: var(--green-dim); color: var(--green); }
+        .sign-btn.minus { background: var(--red-dim); color: var(--red); }
 
-        .city-info { flex-grow: 1; overflow: hidden; }
-        .city-name { font-weight: 600; font-size: 1rem; display: block; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .city-info { flex-grow: 1; overflow: hidden; min-width: 0; }
+        .city-name-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .city-flag {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .city-name { 
+            font-weight: 700; 
+            font-size: 0.95rem; 
+            white-space: nowrap; 
+            text-overflow: ellipsis; 
+            overflow: hidden; 
+        }
+        .city-country {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            font-weight: 400;
+            margin-top: 2px;
+            padding-left: 27px;
+        }
         .weather-reveal { 
-            font-size: 0.75rem; 
+            font-size: 0.72rem; 
             max-height: 0;
             opacity: 0;
+            overflow: hidden;
             transition: all 0.5s ease;
-            color: #fff;
+            color: var(--accent);
+            font-weight: 600;
+            margin-top: 0;
+            padding-left: 27px;
         }
-        .weather-reveal.show { max-height: 20px; opacity: 1; margin-top: 4px; }
+        .weather-reveal.show { max-height: 40px; opacity: 1; margin-top: 5px; }
 
-        .input-group { display: flex; align-items: center; gap: 2px; }
-        input {
-            background: transparent; border: none; color: white;
-            font-size: 1.6rem; font-weight: 800; width: 55px; text-align: right; outline: none;
+        .input-group { 
+            display: flex; 
+            align-items: center; 
+            gap: 1px; 
+            flex-shrink: 0;
+        }
+        input[type="number"] {
+            background: transparent; 
+            border: none; 
+            color: white;
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            width: 55px; 
+            text-align: right; 
+            outline: none;
         }
         input::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-        /* Submit Button */
-        .btn-submit {
-            background: linear-gradient(90deg, #ff7eb3 0%, #ff758c 100%);
-            border: none; border-radius: 50px;
-            padding: 18px; color: white;
-            font-weight: 800; font-size: 1rem;
-            text-transform: uppercase; letter-spacing: 1.5px;
-            cursor: pointer; margin-top: 20px;
-            width: 90%; max-width: 380px;
-            box-shadow: 0 10px 20px rgba(255, 117, 140, 0.3);
-            transition: 0.3s;
+        input::placeholder { color: rgba(255,255,255,0.2); }
+        .degree-symbol {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700; 
+            font-size: 1.3rem;
+            opacity: 0.6;
         }
-        .btn-submit:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-        #share-area { text-align: center; display: none; width: 100%; margin-top: 20px; padding-bottom: 50px; }
-        .emoji-tile { font-size: 2.8rem; margin: 10px; display: inline-block; }
+        .diff-badge {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 8px;
+            margin-left: 8px;
+            display: none;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .diff-badge.show { display: inline-block; }
+        .diff-badge.exact { background: var(--accent); color: #000; }
+        .diff-badge.close { background: var(--green); color: #000; }
+        .diff-badge.warm { background: var(--yellow); color: #000; }
+        .diff-badge.off { background: var(--red); color: #fff; }
+        .diff-badge.far { background: rgba(255,255,255,0.15); color: var(--text-dim); }
 
-        .hidden { display: none; }
-        #loading { padding: 50px; opacity: 0.7; font-weight: 600; }
+        .btn-submit {
+            background: linear-gradient(135deg, var(--accent) 0%, #fc4a1a 100%);
+            border: none; 
+            border-radius: 16px;
+            padding: 18px; 
+            color: #000;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800; 
+            font-size: 0.95rem;
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            cursor: pointer; 
+            margin-top: 20px;
+            width: 100%;
+            box-shadow: 0 8px 25px rgba(247, 183, 51, 0.25);
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(247, 183, 51, 0.35); }
+        .btn-submit:active { transform: translateY(0); }
+
+        #share-area { 
+            text-align: center; 
+            display: none; 
+            width: 100%; 
+            margin-top: 10px;
+            animation: fadeUp 0.6s ease;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .score-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        .emoji-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .emoji-tile { 
+            font-size: 2.6rem; 
+            display: inline-block;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+        }
+        .emoji-tile:nth-child(1) { animation-delay: 0.1s; }
+        .emoji-tile:nth-child(2) { animation-delay: 0.3s; }
+        .emoji-tile:nth-child(3) { animation-delay: 0.5s; }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.3); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .btn-share {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            padding: 15px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .btn-share:hover { background: rgba(255,255,255,0.14); }
+
+        .hidden { display: none !important; }
+
+        #loading { 
+            padding: 60px 20px; 
+            opacity: 0.6; 
+            font-weight: 600; 
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .loader-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .legend-dot {
+            width: 10px; height: 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
 
     <div class="local-bar">
-        <span id="local-info-text">📍 Allow GPS for local weather</span>
-        <span id="local-weather"></span>
+        <div class="local-left">
+            <span id="local-info-text">📍 Getting your location...</span>
+        </div>
+        <div class="local-details" id="local-weather"></div>
     </div>
 
-    <h1 class="main-title">WEATHRLE</h1>
-    
-    <div class="guess-header" id="header-text">Guess Today's Max Temp</div>
+    <div class="container">
+        <h1 class="main-title">WEATHRLE</h1>
+        <div class="subtitle">🌍 Daily Weather Challenge</div>
 
-    <div id="game-section" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
-        <div id="loading">🌍 Sourcing global climates...</div>
-        <div id="challenge-list" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
-        <button id="btn-submit" class="btn-submit hidden" onclick="checkResults()">Submit Guesses</button>
-    </div>
+        <!-- Unit Toggle -->
+        <div class="unit-toggle" id="unit-toggle">
+            <button class="unit-btn active" id="btn-celsius" onclick="setUnit('C')">°C</button>
+            <button class="unit-btn" id="btn-fahrenheit" onclick="setUnit('F')">°F</button>
+        </div>
+        
+        <div class="guess-header" id="header-text">Guess Today's Max Temp</div>
 
-    <div id="share-area">
-        <div id="emoji-container"></div>
-        <button class="btn-submit" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);" onclick="copyShare()">Copy Score 📋</button>
+        <div id="game-section" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div id="loading">🌍 Finding cities around the globe<span class="loader-dots"></span></div>
+            <div id="challenge-list" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+            <button id="btn-submit" class="btn-submit hidden" onclick="checkResults()">Submit</button>
+        </div>
+
+        <div id="share-area">
+            <div class="score-label">Your Result</div>
+            <div class="emoji-row" id="emoji-container"></div>
+            <div id="legend-container" class="legend"></div>
+            <button class="btn-share" onclick="copyShare()" style="margin-top: 20px;">Copy Score 📋</button>
+        </div>
     </div>
 
     <script>
         const CITIES_URL = 'https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json';
-        const weatherIcons = { 0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 51: "🌧️", 61: "🌧️", 71: "❄️", 95: "⚡" };
+
+        const weatherCodeMap = {
+            0:  { icon: "☀️", desc: "Clear sky" },
+            1:  { icon: "🌤️", desc: "Mostly clear" },
+            2:  { icon: "⛅", desc: "Partly cloudy" },
+            3:  { icon: "☁️", desc: "Overcast" },
+            45: { icon: "🌫️", desc: "Fog" },
+            48: { icon: "🌫️", desc: "Freezing fog" },
+            51: { icon: "🌦️", desc: "Light drizzle" },
+            53: { icon: "🌦️", desc: "Drizzle" },
+            55: { icon: "🌧️", desc: "Heavy drizzle" },
+            56: { icon: "🌧️", desc: "Freezing drizzle" },
+            57: { icon: "🌧️", desc: "Heavy freezing drizzle" },
+            61: { icon: "🌧️", desc: "Light rain" },
+            63: { icon: "🌧️", desc: "Moderate rain" },
+            65: { icon: "🌧️", desc: "Heavy rain" },
+            66: { icon: "🌧️", desc: "Freezing rain" },
+            67: { icon: "🌧️", desc: "Heavy freezing rain" },
+            71: { icon: "🌨️", desc: "Light snow" },
+            73: { icon: "🌨️", desc: "Moderate snow" },
+            75: { icon: "❄️", desc: "Heavy snow" },
+            77: { icon: "❄️", desc: "Hail" },
+            80: { icon: "🌦️", desc: "Light showers" },
+            81: { icon: "🌧️", desc: "Showers" },
+            82: { icon: "🌧️", desc: "Heavy showers" },
+            85: { icon: "🌨️", desc: "Light snow showers" },
+            86: { icon: "🌨️", desc: "Heavy snow showers" },
+            95: { icon: "⛈️", desc: "Thunderstorm" },
+            96: { icon: "⛈️", desc: "Thunderstorm w/ hail" },
+            99: { icon: "⛈️", desc: "Severe thunderstorm" },
+        };
+
+        function getWeatherInfo(code) {
+            return weatherCodeMap[code] || { icon: "🌤️", desc: "No data" };
+        }
         
+        // ── State ──
+        // All temps stored internally in °C. Display converts on the fly.
+        let currentUnit = localStorage.getItem('weathrle_unit') || 'C';
         let dailyCities = [];
         let realData = [];
+        let hasSubmitted = false;
+        let localWeatherData = null;
+        let localCityName = null;
         const todayKey = new Date().toDateString();
 
+        // ── Unit helpers ──
+        function cToF(c) { return Math.round(c * 9 / 5 + 32); }
+        function fToC(f) { return Math.round((f - 32) * 5 / 9); }
+        function displayTemp(celsius) { return currentUnit === 'F' ? cToF(celsius) : celsius; }
+        function unitLabel() { return currentUnit === 'F' ? '°F' : '°C'; }
+
+        function setUnit(u) {
+            currentUnit = u;
+            localStorage.setItem('weathrle_unit', u);
+            document.getElementById('btn-celsius').classList.toggle('active', u === 'C');
+            document.getElementById('btn-fahrenheit').classList.toggle('active', u === 'F');
+            updateLocalBar();
+
+            // If already played today, re-render the cards in the new unit
+            if (hasSubmitted || localStorage.getItem('weathrle_played_date') === todayKey) {
+                restoreAndShowFinal();
+            }
+        }
+
+        function updateLocalBar() {
+            if (!localWeatherData) return;
+            const d = localWeatherData;
+            document.getElementById('local-weather').innerHTML = `
+                <span class="local-temp">${d.icon} ${displayTemp(d.min)}° / ${displayTemp(d.max)}${unitLabel()}</span><br>
+                ${d.conditionText}
+            `;
+        }
+
+        // ── Seeded PRNG ──
+        function mulberry32(seed) {
+            return function() {
+                seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+                let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+                t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            };
+        }
+
+        function haversine(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function pickDailyCities(allCities) {
+            const now = new Date();
+            const seed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+            const rng = mulberry32(seed);
+            const valid = allCities.filter(c => c.country && c.lat && c.lng && c.name);
+            const shuffled = valid.slice().sort(() => rng() - 0.5);
+
+            const picked = [];
+            const usedCountries = new Set();
+
+            for (const city of shuffled) {
+                const cc = city.country.toUpperCase();
+                if (usedCountries.has(cc)) continue;
+                let tooClose = false;
+                for (const p of picked) {
+                    if (haversine(city.lat, city.lng, p.lat, p.lng) < 2000) { tooClose = true; break; }
+                }
+                if (tooClose) continue;
+                picked.push(city);
+                usedCountries.add(cc);
+                if (picked.length === 3) break;
+            }
+            return picked;
+        }
+
         async function init() {
+            // Apply saved unit
+            setUnit(currentUnit);
+
             // 1. Geolocation
             navigator.geolocation.getCurrentPosition(async (p) => {
-                const d = await fetchWeather(p.coords.latitude, p.coords.longitude);
-                document.getElementById('local-info-text').innerText = "📍 Your Location";
-                document.getElementById('local-weather').innerHTML = `High: ${d.max}° | Tomorrow: ${d.next}°`;
+                const lat = p.coords.latitude;
+                const lon = p.coords.longitude;
+                const data = await fetchWeather(lat, lon);
+                localWeatherData = data;
+
+                let cityName = "Your Location";
+                try {
+                    const nameRes = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1`);
+                    const nameData = await nameRes.json();
+                    if (nameData.results && nameData.results.length > 0) {
+                        cityName = nameData.results[0].name;
+                    }
+                } catch (e) { }
+                localCityName = cityName;
+
+                document.getElementById('local-info-text').innerHTML = `<span class="dot"></span> 📍 ${cityName}`;
+                updateLocalBar();
             }, () => {
-                document.getElementById('local-info-text').innerHTML = "📍 <small>Enable GPS for local weather</small>";
+                document.getElementById('local-info-text').innerHTML = "📍 Enable GPS for local weather";
+                document.getElementById('local-weather').innerHTML = "";
             });
 
             // 2. Already Played?
-            if (localStorage.getItem('weathrle_final_played') === todayKey) {
-                showFinal(); return;
+            if (localStorage.getItem('weathrle_played_date') === todayKey) {
+                restoreAndShowFinal();
+                return;
             }
 
             // 3. Load Global Challenge
             try {
                 const res = await fetch(CITIES_URL);
                 const all = await res.json();
-                const now = new Date();
-                const seed = now.getFullYear() + now.getMonth() + now.getDate();
-
+                const chosen = pickDailyCities(all);
                 const listDiv = document.getElementById('challenge-list');
-                for(let i=0; i<3; i++) {
-                    const city = all[(seed * (i + 123)) % all.length];
+
+                for (let i = 0; i < chosen.length; i++) {
+                    const city = chosen[i];
                     dailyCities.push(city);
                     const data = await fetchWeather(city.lat, city.lng);
                     realData.push(data);
 
-                    listDiv.innerHTML += `
-                        <div class="city-card">
-                            <button class="sign-btn plus" id="sign-${i}" onclick="toggleSign(${i})">+</button>
-                            <div class="city-info">
-                                <span class="city-name">${getFlagEmoji(city.country)} ${city.name}</span>
-                                <div class="weather-reveal" id="reveal-${i}"></div>
+                    const flag = getFlagEmoji(city.country);
+                    const card = document.createElement('div');
+                    card.className = 'city-card';
+                    card.id = `card-${i}`;
+                    card.innerHTML = `
+                        <button class="sign-btn plus" id="sign-${i}" onclick="toggleSign(${i})">+</button>
+                        <div class="city-info">
+                            <div class="city-name-row">
+                                <span class="city-flag">${flag}</span>
+                                <span class="city-name">${city.name}</span>
                             </div>
-                            <div class="input-group">
-                                <input type="number" id="guess-${i}" placeholder="0" inputmode="numeric">
-                                <span style="font-weight:800; font-size:1.4rem">°</span>
-                            </div>
+                            <span class="city-country">${city.country.toUpperCase()}</span>
+                            <div class="weather-reveal" id="reveal-${i}"></div>
                         </div>
+                        <div class="input-group">
+                            <input type="number" id="guess-${i}" placeholder="—" inputmode="numeric">
+                            <span class="degree-symbol">°</span>
+                        </div>
+                        <span class="diff-badge" id="diff-${i}"></span>
                     `;
+                    listDiv.appendChild(card);
                 }
+
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('btn-submit').classList.remove('hidden');
             } catch (e) {
                 document.getElementById('loading').innerText = "Connection error. Please refresh.";
+                console.error(e);
             }
         }
 
         function toggleSign(i) {
             const b = document.getElementById(`sign-${i}`);
-            b.innerText = b.innerText === "+" ? "-" : "+";
-            b.className = b.innerText === "+" ? "sign-btn plus" : "sign-btn minus";
+            if (b.innerText.trim() === "+") {
+                b.innerText = "−";
+                b.className = "sign-btn minus";
+            } else {
+                b.innerText = "+";
+                b.className = "sign-btn plus";
+            }
         }
 
         async function fetchWeather(lat, lon) {
             try {
-                const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,weathercode&timezone=auto`);
+                const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`);
                 const d = await r.json();
-                return { 
-                    max: Math.round(d.daily.temperature_2m_max[0]), 
-                    next: Math.round(d.daily.temperature_2m_max[1]),
-                    icon: weatherIcons[d.daily.weathercode[0]] || "🌤️"
+                const code = d.daily.weathercode[0];
+                const info = getWeatherInfo(code);
+                return {
+                    max: Math.round(d.daily.temperature_2m_max[0]),
+                    min: Math.round(d.daily.temperature_2m_min[0]),
+                    icon: info.icon,
+                    conditionText: info.desc,
+                    code: code
                 };
-            } catch (e) { return { max: 0, next: 0, icon: "❓" }; }
+            } catch (e) {
+                return { max: 0, min: 0, icon: "❓", conditionText: "No data", code: -1 };
+            }
+        }
+
+        function getDiffClass(diff) {
+            if (diff === 0) return "exact";
+            if (diff <= 2) return "close";
+            if (diff <= 5) return "warm";
+            if (diff <= 10) return "off";
+            return "far";
+        }
+
+        function getDiffEmoji(diff) {
+            if (diff === 0) return "🌟";
+            if (diff <= 2) return "🟩";
+            if (diff <= 5) return "🟨";
+            if (diff <= 10) return "🟥";
+            return "⬛";
         }
 
         function checkResults() {
-            let score = "";
-            for(let i=0; i<3; i++) {
-                const v = document.getElementById(`guess-${i}`).value;
-                if(v === "") return alert("Please fill all guesses!");
-                const s = document.getElementById(`sign-${i}`).innerText === "+" ? 1 : -1;
-                const guess = parseInt(v) * s;
-                const diff = Math.abs(guess - realData[i].max);
+            const emojis = [];
 
-                if (guess === realData[i].max) score += "🌟";
-                else if (diff <= 2) score += "🟩";
-                else if (diff <= 5) score += "🟨";
-                else if (diff <= 10) score += "🟥";
-                else score += "⬛";
-                
+            for (let i = 0; i < 3; i++) {
+                const v = document.getElementById(`guess-${i}`).value;
+                if (v === "") { alert("Please fill in all guesses!"); return; }
+
+                const signText = document.getElementById(`sign-${i}`).innerText.trim();
+                const s = (signText === "+") ? 1 : -1;
+                const guessInUnit = parseInt(v) * s;
+
+                // Convert guess to °C for scoring
+                const guessCelsius = currentUnit === 'F' ? fToC(guessInUnit) : guessInUnit;
+                const actualCelsius = realData[i].max;
+                const diff = Math.abs(guessCelsius - actualCelsius);
+                const cls = getDiffClass(diff);
+                emojis.push(getDiffEmoji(diff));
+
+                // Show reveal
                 const reveal = document.getElementById(`reveal-${i}`);
-                reveal.innerHTML = `${realData[i].icon} Real High: ${realData[i].max}°C`;
+                reveal.innerHTML = `${realData[i].icon} High: ${displayTemp(actualCelsius)}${unitLabel()}  •  Low: ${displayTemp(realData[i].min)}${unitLabel()}  •  ${realData[i].conditionText}`;
                 reveal.classList.add('show');
+
+                // Show diff badge
+                const badge = document.getElementById(`diff-${i}`);
+                const actualInUnit = displayTemp(actualCelsius);
+                const diffInUnit = guessInUnit - actualInUnit;
+                badge.textContent = diff === 0 ? "EXACT!" : (diffInUnit > 0 ? "+" : "") + diffInUnit + "°";
+                badge.className = `diff-badge show ${cls}`;
+
+                const card = document.getElementById(`card-${i}`);
+                card.classList.add('revealed', cls);
+
+                document.getElementById(`guess-${i}`).disabled = true;
+                document.getElementById(`sign-${i}`).disabled = true;
             }
-            localStorage.setItem('weathrle_final_played', todayKey);
-            localStorage.setItem('weathrle_final_score', score);
+
+            hasSubmitted = true;
+
+            const scoreStr = emojis.join('');
+            localStorage.setItem('weathrle_played_date', todayKey);
+            localStorage.setItem('weathrle_score', scoreStr);
+
+            // Save city data (always in °C)
+            const savedCities = dailyCities.map((c, i) => {
+                const signText = document.getElementById(`sign-${i}`).innerText.trim();
+                const s = (signText === "+" || signText === "+") ? 1 : -1;
+                const guessInUnit = parseInt(document.getElementById(`guess-${i}`).value) * s;
+                const guessCelsius = currentUnit === 'F' ? fToC(guessInUnit) : guessInUnit;
+                return {
+                    name: c.name,
+                    country: c.country,
+                    guessCelsius: guessCelsius,
+                    actual: realData[i].max,
+                    min: realData[i].min,
+                    icon: realData[i].icon,
+                    conditionText: realData[i].conditionText
+                };
+            });
+            localStorage.setItem('weathrle_cities', JSON.stringify(savedCities));
+
             document.getElementById('btn-submit').classList.add('hidden');
-            setTimeout(showFinal, 1800);
+            setTimeout(() => showFinal(scoreStr), 1200);
         }
 
-        function showFinal() {
-            document.getElementById('game-section').classList.add('hidden');
+        function restoreAndShowFinal() {
+            hasSubmitted = true;
+            const scoreStr = localStorage.getItem('weathrle_score') || "";
+            const savedCities = JSON.parse(localStorage.getItem('weathrle_cities') || "[]");
+
+            const listDiv = document.getElementById('challenge-list');
+            listDiv.innerHTML = '';
+
+            for (let i = 0; i < savedCities.length; i++) {
+                const c = savedCities[i];
+                const diff = Math.abs(c.guessCelsius - c.actual);
+                const cls = getDiffClass(diff);
+                const flag = getFlagEmoji(c.country);
+
+                const guessInUnit = displayTemp(c.guessCelsius);
+                const actualInUnit = displayTemp(c.actual);
+                const diffInUnit = guessInUnit - actualInUnit;
+
+                let badgeText = diff === 0 ? "EXACT!" : (diffInUnit > 0 ? "+" : "") + diffInUnit + "°";
+
+                const card = document.createElement('div');
+                card.className = `city-card revealed ${cls}`;
+                card.innerHTML = `
+                    <button class="sign-btn ${c.guessCelsius >= 0 ? 'plus' : 'minus'}" disabled>${c.guessCelsius >= 0 ? '+' : '−'}</button>
+                    <div class="city-info">
+                        <div class="city-name-row">
+                            <span class="city-flag">${flag}</span>
+                            <span class="city-name">${c.name}</span>
+                        </div>
+                        <span class="city-country">${c.country.toUpperCase()}</span>
+                        <div class="weather-reveal show" id="reveal-${i}">${c.icon} High: ${displayTemp(c.actual)}${unitLabel()}  •  Low: ${displayTemp(c.min)}${unitLabel()}  •  ${c.conditionText}</div>
+                    </div>
+                    <div class="input-group">
+                        <input type="number" value="${Math.abs(guessInUnit)}" disabled>
+                        <span class="degree-symbol">°</span>
+                    </div>
+                    <span class="diff-badge show ${cls}">${badgeText}</span>
+                `;
+                listDiv.appendChild(card);
+            }
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('btn-submit').classList.add('hidden');
+            showFinal(scoreStr);
+        }
+
+        function showFinal(scoreStr) {
             document.getElementById('header-text').innerText = "Today's Result";
             document.getElementById('share-area').style.display = 'block';
-            const score = localStorage.getItem('weathrle_final_score');
-            if (score === "🌟🌟🌟") confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            document.getElementById('emoji-container').innerHTML = score.split('').map(c => `<span class="emoji-tile">${c}</span>`).join('');
+
+            const emojiArr = Array.from(scoreStr);
+            const container = document.getElementById('emoji-container');
+            container.innerHTML = emojiArr.map(e => `<span class="emoji-tile">${e}</span>`).join('');
+
+            document.getElementById('legend-container').innerHTML = `
+                <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span> Exact</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> ±2°</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span> ±5°</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span> ±10°</span>
+                <span class="legend-item"><span class="legend-dot" style="background:rgba(255,255,255,0.15)"></span> >10°</span>
+            `;
+
+            if (scoreStr === "🌟🌟🌟") {
+                confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+            }
         }
 
         function getFlagEmoji(countryCode) {
@@ -285,10 +848,14 @@
         }
 
         function copyShare() {
-            const score = localStorage.getItem('weathrle_final_score');
-            const m = score === "🌟🌟🌟" ? "I AM A WEATHER MASTER! 👑" : "My WEATHRLE score today: 🌤️";
-            navigator.clipboard.writeText(`${m}\n\n${score}\n\nhttps://weathrle.com`);
-            alert("Copied to clipboard! 🚀");
+            const score = localStorage.getItem('weathrle_score') || "";
+            const perfect = score === "🌟🌟🌟";
+            const msg = perfect ? "I'm a weather master! 👑" : "My WEATHRLE score today:";
+            navigator.clipboard.writeText(`${msg}\n\n${score}\n\nhttps://weathrle.com`).then(() => {
+                const btn = document.querySelector('.btn-share');
+                btn.textContent = "Copied! ✅";
+                setTimeout(() => { btn.textContent = "Copy Score 📋"; }, 2000);
+            });
         }
 
         init();
