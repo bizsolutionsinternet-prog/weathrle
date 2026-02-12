@@ -697,7 +697,7 @@ const COUNTRY_NAMES = {
     IR:"Iran",KW:"Kuwait",QA:"Qatar",BH:"Bahrain",OM:"Oman",YE:"Yemen",PS:"Palestine",
     AF:"Afghanistan",UZ:"Uzbekistan",KZ:"Kazakhstan",TM:"Turkmenistan",
     KG:"Kyrgyzstan",TJ:"Tajikistan",AM:"Armenia",AZ:"Azerbaijan",GE:"Georgia",
-    NP:"Nepal",BT:"Bhutan",LK:"Sri Lanka",MV:"Maldives",MM:"Myanmar",
+    NP:"Nepal",BT:"Bhutan",LK:"Sri Lanka",MV:"Maldives",MM:"Myanmar",MN:"Mongolia",
     LA:"Laos",KH:"Cambodia",SG:"Singapore",BN:"Brunei",TL:"Timor-Leste",
     PG:"Papua New Guinea",FJ:"Fiji",SB:"Solomon Islands",VU:"Vanuatu",
     NC:"New Caledonia",PF:"French Polynesia",WS:"Samoa",TO:"Tonga",
@@ -1108,11 +1108,11 @@ function showResults(score) {
         rowModal.innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
         
         document.getElementById('legend-modal').innerHTML = `
-            <span><span class="dot" style="background:var(--accent)"></span> Exact</span>
+            <span>🌟 Exact</span>
             <span><span class="dot" style="background:var(--green)"></span> ±2°</span>
             <span><span class="dot" style="background:var(--yellow)"></span> ±5°</span>
             <span><span class="dot" style="background:var(--red)"></span> ±10°</span>
-            <span><span class="dot" style="background:#e5e7eb"></span> >10°</span>
+            <span>⬛ >10°</span>
         `;
         
         // Countdown for modal
@@ -1136,11 +1136,11 @@ function showResults(score) {
         row.innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
         
         document.getElementById('legend').innerHTML = `
-            <span><span class="dot" style="background:var(--accent)"></span> Exact</span>
+            <span>🌟 Exact</span>
             <span><span class="dot" style="background:var(--green)"></span> ±2°</span>
             <span><span class="dot" style="background:var(--yellow)"></span> ±5°</span>
             <span><span class="dot" style="background:var(--red)"></span> ±10°</span>
-            <span><span class="dot" style="background:#e5e7eb"></span> >10°</span>
+            <span>⬛ >10°</span>
         `;
         
         // Countdown for regular view
@@ -1193,4 +1193,3 @@ init();
 </script>
 </body>
 </html>
-
