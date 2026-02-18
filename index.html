@@ -917,7 +917,7 @@ function pickCities(all) {
     const day = n.getUTCDate();
     const rng = prng(year*10000 + month*100 + day);
     const valid = all.filter(c => c.country && c.lat && c.lng && c.name);
-    const shuffled = valid.slice().sort(() => rng() - 0.5);
+    const shuffled = shuffle(valid, rng);
     const picked = [], used = new Set();
     for (const c of shuffled) {
         const cc = c.country.toUpperCase();
@@ -939,6 +939,15 @@ async function fetchW(lat, lon) {
         return { max: Math.round(d.daily.temperature_2m_max[0]), min: Math.round(d.daily.temperature_2m_min[0]), icon: info.i, desc: info.d };
     } catch { return { max: 0, min: 0, icon: "❓", desc: "No data" }; }
 }
+    
+
+    function shuffle(arr, rng) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
 
 // ── Climate hint based on latitude ──
 function climateHint(lat) {
@@ -1379,3 +1388,4 @@ init();
 </script>
 </body>
 </html>
+
