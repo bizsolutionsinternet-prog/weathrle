@@ -95,6 +95,29 @@
             --shadow-lg: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
         }
 
+        [data-theme="dark"] {
+            --bg: #0f1117;
+            --bg2: #1a1d27;
+            --surface: #1a1d27;
+            --surface-hover: #242836;
+            --border: #2e3345;
+            --border-active: #3d4359;
+            --text: #e8eaf0;
+            --text-dim: #8b90a0;
+            --text-mid: #a5aab8;
+            --accent: #f59e0b;
+            --accent-dim: #3d2e0a;
+            --accent-glow: rgba(245,158,11,0.25);
+            --green: #34d399;
+            --green-dim: #0d3326;
+            --yellow: #fbbf24;
+            --yellow-dim: #3d2e0a;
+            --red: #f87171;
+            --red-dim: #3d1515;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+            --shadow-lg: 0 4px 6px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -300,7 +323,7 @@
         }
         .temp-input-wrap:focus-within {
             border-color: var(--accent);
-            background: #fff;
+            background: var(--surface);
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
         .temp-input {
@@ -314,7 +337,7 @@
             width: 60px;
             text-align: right;
         }
-        .temp-input::placeholder { color: #d1d5db; }
+        .temp-input::placeholder { color: var(--text-dim); opacity: 0.5; }
         .temp-input:disabled { opacity: 0.6; }
         .deg {
             font-family: 'JetBrains Mono', monospace;
@@ -437,7 +460,7 @@
             background: var(--surface);
             border-radius: 24px 24px 0 0;
             padding: 24px 20px 32px;
-            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
             animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             max-height: 85vh;
             overflow-y: auto;
@@ -580,6 +603,24 @@
             text-decoration: underline;
         }
 
+        /* ── Dark Mode Toggle ── */
+        .theme-toggle {
+            width: 36px; height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            box-shadow: var(--shadow);
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover { background: var(--surface-hover); transform: translateY(-1px); }
+
         .hidden { display: none !important; }
 
         #loading {
@@ -616,6 +657,7 @@
             <span>Streak</span>
             <span class="streak-num" id="streak-num">0</span>
         </div>
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙</button>
     </div>
 
     <div class="section-label" id="section-label">Today's Cities</div>
@@ -730,6 +772,29 @@ let cities = [], weather = [];
 let localData = null;
 let localCity = "";
 let played = false;
+
+// ── Dark Mode ──
+function initTheme() {
+    const saved = localStorage.getItem('weathrle_theme');
+    if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    updateThemeIcon();
+}
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('weathrle_theme', next);
+    updateThemeIcon();
+}
+function updateThemeIcon() {
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+}
+initTheme();
 
 // Get UTC day number (like Wordle) - days since Jan 1, 2024
 function getDayNumber() {
@@ -904,11 +969,31 @@ async function init() {
     setUnit(unit);
     updateStreakDisplay();
 
-    // Geolocation
-    navigator.geolocation.getCurrentPosition(async pos => {
-        const {latitude: lat, longitude: lon} = pos.coords;
+    // Geolocation with IP fallback
+    async function setupLocalWeather(lat, lon, name) {
         const d = await fetchW(lat, lon);
         localData = d;
+        localCity = name;
+        localStorage.setItem('weathrle_local_city', name);
+        document.getElementById('local-info').innerHTML = `<span class="pulse-dot"></span> <span class="loc-name">📍 ${name}</span>`;
+        refreshLocalBar();
+    }
+
+    async function geoByIP() {
+        try {
+            const r = await fetch('https://ipapi.co/json/');
+            const j = await r.json();
+            if (j.latitude && j.longitude) {
+                const name = j.city ? (j.city + (j.region ? ', ' + j.region : '')) : 'Your location';
+                await setupLocalWeather(j.latitude, j.longitude, name);
+            }
+        } catch {
+            document.getElementById('local-info').innerHTML = '📍 Location unavailable';
+        }
+    }
+
+    navigator.geolocation.getCurrentPosition(async pos => {
+        const {latitude: lat, longitude: lon} = pos.coords;
         let name = "Your location";
         try {
             const r = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1`);
@@ -916,17 +1001,13 @@ async function init() {
             if (j.results?.[0]) {
                 name = j.results[0].name;
                 if (j.results[0].admin1) name += ", " + j.results[0].admin1;
-                localCity = name;
-                localStorage.setItem('weathrle_local_city', localCity);
             }
         } catch {}
-        document.getElementById('local-info').innerHTML = `<span class="pulse-dot"></span> <span class="loc-name">📍 ${name}</span>`;
-        refreshLocalBar();
+        await setupLocalWeather(lat, lon, name);
     }, () => {
-        document.getElementById('local-info').innerHTML = '📍 Enable GPS for local weather';
-        const saved = localStorage.getItem('weathrle_local_city');
-        if (saved) localCity = saved;
-    });
+        // GPS denied or unavailable — try IP geolocation
+        geoByIP();
+    }, { timeout: 5000 });
 
     // Already played today?
     const savedDay = parseInt(localStorage.getItem('weathrle_date') || '0');
