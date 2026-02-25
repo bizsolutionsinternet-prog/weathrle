@@ -44,12 +44,6 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     
-    <!-- Vercel Analytics -->
-    <script>
-        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
-    
     <!-- Structured Data / Schema.org -->
     <script type="application/ld+json">
     {
@@ -90,8 +84,6 @@
             --accent: #f59e0b;
             --accent-dim: #fef3c7;
             --accent-glow: rgba(245,158,11,0.2);
-            --gold: #eab308;
-            --gold-dim: #fef9c3;
             --green: #10b981;
             --green-dim: #d1fae5;
             --yellow: #f59e0b;
@@ -101,32 +93,6 @@
             --radius: 12px;
             --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
             --shadow-lg: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
-        }
-
-        /* Dark mode */
-        [data-theme="dark"] {
-            --bg: #0f172a;
-            --bg2: #1e293b;
-            --surface: #1e293b;
-            --surface-hover: #334155;
-            --border: #334155;
-            --border-active: #475569;
-            --text: #f1f5f9;
-            --text-dim: #94a3b8;
-            --text-mid: #cbd5e1;
-            --accent: #f59e0b;
-            --accent-dim: rgba(251,191,36,0.15);
-            --accent-glow: rgba(251,191,36,0.3);
-            --gold: #eab308;
-            --gold-dim: rgba(234,179,8,0.2);
-            --green: #10b981;
-            --green-dim: rgba(16,185,129,0.15);
-            --yellow: #f59e0b;
-            --yellow-dim: rgba(251,191,36,0.15);
-            --red: #ef4444;
-            --red-dim: rgba(239,68,68,0.15);
-            --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-            --shadow-lg: 0 4px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -249,27 +215,6 @@
             color: var(--accent);
         }
 
-        .theme-toggle {
-            padding: 8px 12px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .theme-toggle:hover {
-            background: var(--surface-hover);
-            transform: scale(1.05);
-        }
-        .theme-toggle:active {
-            transform: scale(0.95);
-        }
-
         .section-label {
             font-size: 0.65rem;
             text-transform: uppercase;
@@ -302,7 +247,7 @@
 
         .card:hover { box-shadow: var(--shadow-lg); }
 
-        .card.revealed.exact  { border-color: var(--gold); background: var(--gold-dim); }
+        .card.revealed.exact  { border-color: var(--accent); background: var(--accent-dim); }
         .card.revealed.close  { border-color: var(--green); background: var(--green-dim); }
         .card.revealed.warm   { border-color: var(--yellow); background: var(--yellow-dim); }
         .card.revealed.off    { border-color: var(--red); background: var(--red-dim); }
@@ -355,30 +300,9 @@
         }
         .temp-input-wrap:focus-within {
             border-color: var(--accent);
-            background: var(--surface);
+            background: #fff;
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
-        
-        .minus-btn {
-            background: none;
-            border: none;
-            color: var(--text-mid);
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 0 4px;
-            margin-right: 2px;
-            transition: all 0.2s;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .minus-btn:hover {
-            color: var(--accent);
-            transform: scale(1.1);
-        }
-        .minus-btn:active {
-            transform: scale(0.95);
-        }
-        
         .temp-input {
             background: none;
             border: none;
@@ -433,9 +357,9 @@
             border-radius: 8px;
             white-space: nowrap;
         }
-        .diff-pill.exact { background: var(--gold); color: #000; }
+        .diff-pill.exact { background: var(--accent); color: #fff; }
         .diff-pill.close { background: var(--green); color: #fff; }
-        .diff-pill.warm  { background: var(--yellow); color: #000; }
+        .diff-pill.warm  { background: var(--yellow); color: #fff; }
         .diff-pill.off   { background: var(--red); color: #fff; }
         .diff-pill.far   { background: #e5e7eb; color: var(--text-mid); }
 
@@ -624,19 +548,15 @@
         /* ── Countdown ── */
         .countdown {
             margin-top: 20px;
-            font-size: 0.85rem;
-            color: var(--text-mid);
+            font-size: 0.75rem;
+            color: var(--text-dim);
             text-align: center;
-            font-weight: 500;
         }
         .countdown .time {
             font-family: 'JetBrains Mono', monospace;
-            font-weight: 800;
+            font-weight: 700;
             color: var(--text);
-            font-size: 1.3rem;
-            display: block;
-            margin-top: 6px;
-            letter-spacing: 1px;
+            font-size: 0.9rem;
         }
 
         /* ── Footer ── */
@@ -691,9 +611,6 @@
             <button class="unit-btn active" id="btn-c" onclick="setUnit('C')">°C</button>
             <button class="unit-btn" id="btn-f" onclick="setUnit('F')">°F</button>
         </div>
-        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
-            <span id="theme-icon">🌙</span>
-        </button>
         <div class="streak-badge">
             <span class="fire">🔥</span>
             <span>Streak</span>
@@ -713,7 +630,7 @@
         <div class="section-label">Your Score</div>
         <div class="emoji-row" id="emoji-row"></div>
         <div class="legend" id="legend"></div>
-        <button class="btn-copy" onclick="shareScore()">Share Score 📤</button>
+        <button class="btn-copy" onclick="copyScore()">Copy Score 📋</button>
         <div class="countdown" id="countdown"></div>
     </div>
 </div>
@@ -726,7 +643,7 @@
         <div class="section-label">Your Score</div>
         <div class="emoji-row" id="emoji-row-modal"></div>
         <div class="legend" id="legend-modal"></div>
-        <button class="btn-copy" onclick="shareScore()">Share Score 📤</button>
+        <button class="btn-copy" onclick="copyScore()">Copy Score 📋</button>
         <div class="countdown" id="countdown-modal"></div>
     </div>
 </div>
@@ -864,28 +781,6 @@ function setUnit(u) {
 function getStreak() { return parseInt(localStorage.getItem('weathrle_streak') || '0'); }
 function updateStreakDisplay() { document.getElementById('streak-num').textContent = getStreak(); }
 
-// ── Dark Mode ──
-function toggleTheme() {
-    const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('weathrle_theme', newTheme);
-    
-    // Update icon
-    document.getElementById('theme-icon').textContent = newTheme === 'dark' ? '☀️' : '🌙';
-}
-
-function initTheme() {
-    const savedTheme = localStorage.getItem('weathrle_theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-    
-    document.documentElement.setAttribute('data-theme', theme);
-    document.getElementById('theme-icon').textContent = theme === 'dark' ? '☀️' : '🌙';
-}
-
 // ── Local weather ──
 function refreshLocalBar() {
     if (!localData) return;
@@ -909,6 +804,26 @@ function haversine(a, b, c, d) {
     return R*2*Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
 }
 
+function getContinent(lat, lng, cc) {
+    cc = (cc||'').toUpperCase();
+    // Oceania
+    if (['AU','NZ','FJ','PG','SB','VU','NC','PF','WS','TO','KI','TV','NR','PW','FM','MH','GU','MP','AS','CK','NU','TK','WF'].includes(cc)) return 'OC';
+    // North America & Caribbean
+    if (['US','CA','MX','GT','BZ','HN','SV','NI','CR','PA','CU','JM','HT','DO','PR','TT','BB','GD','LC','VC','AG','DM','KN','BS'].includes(cc)) return 'NA';
+    // South America
+    if (['BR','AR','CL','CO','PE','VE','EC','BO','PY','UY','GY','SR','GF','FK'].includes(cc)) return 'SA';
+    // Africa
+    if (lat < 38 && lat > -35 && lng > -20 && lng < 55) {
+        const euroSmall = ['ES','PT','IT','GR','MT','CY','TR'];
+        if (!euroSmall.includes(cc)) return 'AF';
+    }
+    // Europe
+    if (lat > 35 && lat < 72 && lng > -25 && lng < 60) return 'EU';
+    // Asia (fallback for remaining)
+    if (lng > 25 || (lat > 0 && lng < -120)) return 'AS';
+    return 'OT';
+}
+
 function pickCities(all) {
     // Use UTC date so everyone worldwide sees the same cities on the same day
     const n = new Date();
@@ -917,14 +832,24 @@ function pickCities(all) {
     const day = n.getUTCDate();
     const rng = prng(year*10000 + month*100 + day);
     const valid = all.filter(c => c.country && c.lat && c.lng && c.name);
-    const shuffled = shuffle(valid, rng);
-    const picked = [], used = new Set();
+
+    // Deterministic Fisher-Yates shuffle (same result in every browser)
+    const shuffled = valid.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    const picked = [], usedCountries = new Set(), usedContinents = new Set();
     for (const c of shuffled) {
         const cc = c.country.toUpperCase();
-        if (used.has(cc)) continue;
-        if (picked.some(p => haversine(c.lat, c.lng, p.lat, p.lng) < 2000)) continue;
+        if (usedCountries.has(cc)) continue;
+        const cont = getContinent(parseFloat(c.lat), parseFloat(c.lng), cc);
+        if (usedContinents.has(cont)) continue;
+        if (picked.some(p => haversine(parseFloat(c.lat), parseFloat(c.lng), parseFloat(p.lat), parseFloat(p.lng)) < 2000)) continue;
         picked.push(c);
-        used.add(cc);
+        usedCountries.add(cc);
+        usedContinents.add(cont);
         if (picked.length === 3) break;
     }
     return picked;
@@ -939,15 +864,6 @@ async function fetchW(lat, lon) {
         return { max: Math.round(d.daily.temperature_2m_max[0]), min: Math.round(d.daily.temperature_2m_min[0]), icon: info.i, desc: info.d };
     } catch { return { max: 0, min: 0, icon: "❓", desc: "No data" }; }
 }
-    
-
-    function shuffle(arr, rng) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(rng() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
 
 // ── Climate hint based on latitude ──
 function climateHint(lat) {
@@ -962,67 +878,29 @@ function hemisphereHint(lat) {
     return parseFloat(lat) >= 0 ? "🌐 Northern" : "🌐 Southern";
 }
 
-// ── Input: allow digits and minus, with better mobile support ──
+// ── Input: block "e", allow only digits and minus ──
 function sanitizeInput(el) {
-    // Better handling for mobile keyboards
     el.addEventListener('keydown', function(e) {
-        // Allow: backspace, delete, tab, escape, enter, arrows
         if ([8, 9, 27, 13, 46, 37, 38, 39, 40].includes(e.keyCode)) return;
-        // Allow minus only at start
-        if ((e.key === '-' || e.key === '−') && el.value === '' && el.selectionStart === 0) return;
-        // Allow digits
+        if (e.key === '-' && el.value === '' && el.selectionStart === 0) return;
         if (e.key >= '0' && e.key <= '9') return;
-        // Block everything else
         e.preventDefault();
     });
-    
     el.addEventListener('input', function() {
-        // Clean value - allow only digits and minus
-        let cleaned = el.value.replace(/[^0-9\-−]/g, '');
-        
-        // Replace minus sign variants with standard minus
-        cleaned = cleaned.replace(/−/g, '-');
-        
-        // Only allow minus at the start
-        if (cleaned.indexOf('-') > 0) {
-            cleaned = cleaned.replace(/-/g, '');
+        el.value = el.value.replace(/[^0-9\-]/g, '');
+        if (el.value.indexOf('-') > 0) {
+            el.value = el.value.replace(/-/g, '');
         }
-        
-        // Only allow one minus
-        if ((cleaned.match(/-/g) || []).length > 1) {
-            cleaned = '-' + cleaned.replace(/-/g, '');
+        if ((el.value.match(/-/g) || []).length > 1) {
+            el.value = '-' + el.value.replace(/-/g, '');
         }
-        
-        el.value = cleaned;
     });
-    
-    // Add minus button for mobile users
-    const wrapper = el.closest('.temp-input-wrap');
-    if (wrapper && !wrapper.querySelector('.minus-btn')) {
-        const minusBtn = document.createElement('button');
-        minusBtn.className = 'minus-btn';
-        minusBtn.innerHTML = '±';
-        minusBtn.type = 'button';
-        minusBtn.onclick = function(e) {
-            e.preventDefault();
-            if (el.value.startsWith('-')) {
-                el.value = el.value.substring(1);
-            } else if (el.value !== '') {
-                el.value = '-' + el.value;
-            } else {
-                el.value = '-';
-            }
-            el.focus();
-        };
-        wrapper.insertBefore(minusBtn, el);
-    }
 }
 
 // ──────────────────────────────────────────
 // Init
 // ──────────────────────────────────────────
 async function init() {
-    initTheme();
     setUnit(unit);
     updateStreakDisplay();
 
@@ -1083,7 +961,7 @@ async function init() {
                         </div>
                     </div>
                     <div class="temp-input-wrap">
-                        <input type="text" class="temp-input" id="input-${i}" placeholder="—" inputmode="text" maxlength="5" autocomplete="off">
+                        <input type="text" class="temp-input" id="input-${i}" placeholder="—" inputmode="numeric" maxlength="4" autocomplete="off">
                         <span class="deg">°</span>
                     </div>
                 </div>
@@ -1324,7 +1202,7 @@ function closeResultsModal(event) {
     document.body.classList.remove('modal-open');
 }
 
-async function shareScore() {
+function copyScore() {
     const score = localStorage.getItem('weathrle_score') || '';
     const streak = getStreak();
     const msg = score === '🌟🌟🌟' ? '🏆 Perfect score!' : 'My WEATHRLE today:';
@@ -1336,51 +1214,10 @@ async function shareScore() {
         locationLine = `\n📍 ${savedCity}: ${dT(localData.min)}°-${dT(localData.max)}${uL()}`;
     }
     
-    const shareText = `${msg}\n\n${score}${locationLine}\n\n🔥 Streak: ${streak}\n\nPlay at: https://weathrle.com`;
-    
-    // Check if Web Share API is available (mobile browsers)
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: 'WEATHRLE Score',
-                text: shareText
-            });
-            // Success - no need to show message as the share sheet appeared
-        } catch (err) {
-            // User cancelled or error - fallback to copy
-            if (err.name !== 'AbortError') {
-                copyToClipboard(shareText);
-            }
-        }
-    } else {
-        // Desktop or browser without Web Share API - just copy
-        copyToClipboard(shareText);
-    }
-}
-
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        const btns = document.querySelectorAll('.btn-copy');
-        btns.forEach(btn => {
-            btn.textContent = 'Copied! ✅';
-            setTimeout(() => btn.textContent = 'Share Score 📤', 2000);
-        });
-    }).catch(() => {
-        // Fallback for older browsers
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        
-        const btns = document.querySelectorAll('.btn-copy');
-        btns.forEach(btn => {
-            btn.textContent = 'Copied! ✅';
-            setTimeout(() => btn.textContent = 'Share Score 📤', 2000);
-        });
+    navigator.clipboard.writeText(`${msg}\n\n${score}${locationLine}\n\n🔥 Streak: ${streak}\nhttps://weathrle.com`).then(() => {
+        const btn = document.querySelector('.btn-copy');
+        btn.textContent = 'Copied! ✅';
+        setTimeout(() => btn.textContent = 'Copy Score 📋', 2000);
     });
 }
 
@@ -1388,4 +1225,3 @@ init();
 </script>
 </body>
 </html>
-
