@@ -672,7 +672,7 @@
         <div class="section-label">Your Score</div>
         <div class="emoji-row" id="emoji-row"></div>
         <div class="legend" id="legend"></div>
-        <button class="btn-copy" onclick="copyScore()">Copy Score 📋</button>
+        <button class="btn-copy" onclick="shareScore()">Share Score 📋</button>
         <div class="countdown" id="countdown"></div>
     </div>
 </div>
@@ -685,7 +685,7 @@
         <div class="section-label">Your Score</div>
         <div class="emoji-row" id="emoji-row-modal"></div>
         <div class="legend" id="legend-modal"></div>
-        <button class="btn-copy" onclick="copyScore()">Copy Score 📋</button>
+        <button class="btn-copy" onclick="shareScore()">Share Score 📋</button>
         <div class="countdown" id="countdown-modal"></div>
     </div>
 </div>
@@ -1283,23 +1283,30 @@ function closeResultsModal(event) {
     document.body.classList.remove('modal-open');
 }
 
-function copyScore() {
+function shareScore() {
     const score = localStorage.getItem('weathrle_score') || '';
     const streak = getStreak();
     const msg = score === '🌟🌟🌟' ? '🏆 Perfect score!' : 'My WEATHRLE today:';
     
-    // Only include local city info if we actually have it (user gave permission)
-    const savedCity = localStorage.getItem('weathrle_local_city');
     let locationLine = '';
-    if (savedCity && localData && localData.max !== 0) {
-        locationLine = `\n📍 ${savedCity}: ${dT(localData.min)}°-${dT(localData.max)}${uL()}`;
+    if (localData && localData.max !== 0) {
+        locationLine = `\n📍 My location: ${dT(localData.min)}°-${dT(localData.max)}${uL()}`;
     }
     
-    navigator.clipboard.writeText(`${msg}\n\n${score}${locationLine}\n\n🔥 Streak: ${streak}\nhttps://weathrle.com`).then(() => {
-        const btn = document.querySelector('.btn-copy');
-        btn.textContent = 'Copied! ✅';
-        setTimeout(() => btn.textContent = 'Copy Score 📋', 2000);
-    });
+    const text = `${msg}\n\n${score}${locationLine}\n\n🔥 Streak: ${streak}\nhttps://weathrle.com`;
+
+    // Use native share sheet on mobile, clipboard on desktop
+    if (navigator.share && window.innerWidth < 768) {
+        navigator.share({ text }).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(text).then(() => {
+            const btns = document.querySelectorAll('.btn-copy');
+            btns.forEach(btn => {
+                btn.textContent = 'Copied! ✅';
+                setTimeout(() => btn.textContent = 'Share Score 📋', 2000);
+            });
+        });
+    }
 }
 
 init();
