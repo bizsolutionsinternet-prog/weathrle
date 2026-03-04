@@ -603,6 +603,75 @@
             text-decoration: underline;
         }
 
+        /* ── Mode Tabs ── */
+        .mode-tabs {
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin: 20px 0 0;
+            width: 100%;
+            max-width: 280px;
+        }
+        .mode-tab {
+            flex: 1;
+            padding: 10px 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mode-tab.active { background: var(--accent); color: #fff; }
+        .mode-tab:not(.active):hover { background: var(--surface-hover); color: var(--text); }
+
+        /* ── Points Score Display ── */
+        .score-points {
+            margin: 8px 0 16px;
+        }
+        .score-points .pts-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+        }
+        .score-points .pts-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .score-points.perfect .pts-number { color: var(--accent); }
+
+        /* ── Next Round Button (Infinity) ── */
+        .btn-next {
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px;
+            border: 1.5px solid var(--accent);
+            border-radius: 10px;
+            background: transparent;
+            color: var(--accent);
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-next:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
+
         /* ── Dark Mode Toggle ── */
         .theme-toggle {
             width: 36px; height: 36px;
@@ -647,12 +716,17 @@
         <div class="tagline">Guess today's high temperature</div>
     </div>
 
+    <div class="mode-tabs">
+        <button class="mode-tab active" id="tab-daily" onclick="switchMode('daily')">☀️ Daily</button>
+        <button class="mode-tab" id="tab-infinity" onclick="switchMode('infinity')">∞ Infinity</button>
+    </div>
+
     <div class="controls-row">
         <div class="unit-toggle">
             <button class="unit-btn active" id="btn-c" onclick="setUnit('C')">°C</button>
             <button class="unit-btn" id="btn-f" onclick="setUnit('F')">°F</button>
         </div>
-        <div class="streak-badge">
+        <div class="streak-badge" id="streak-badge-wrap">
             <span class="fire">🔥</span>
             <span>Streak</span>
             <span class="streak-num" id="streak-num">0</span>
@@ -662,18 +736,46 @@
 
     <div class="section-label" id="section-label">Today's Cities</div>
 
-    <div id="game-area" style="width:100%;">
-        <div id="loading">🌍 Finding cities around the globe...</div>
-        <div id="cards"></div>
-        <button class="btn-go hidden" id="btn-submit" onclick="submitGuesses()">Submit Guesses</button>
+    <!-- DAILY MODE -->
+    <div id="daily-mode" style="width:100%;">
+        <div id="game-area" style="width:100%;">
+            <div id="loading">🌍 Finding cities around the globe...</div>
+            <div id="cards"></div>
+            <button class="btn-go hidden" id="btn-submit" onclick="submitGuesses()">Submit Guesses</button>
+        </div>
+
+        <div id="results-area">
+            <div class="section-label">Your Score</div>
+            <div class="score-points" id="score-points">
+                <div class="pts-number" id="pts-number">—</div>
+                <div class="pts-label">points (lower is better)</div>
+            </div>
+            <div class="emoji-row" id="emoji-row"></div>
+            <div class="legend" id="legend"></div>
+            <button class="btn-copy" onclick="shareScore()">Share Score 📋</button>
+            <div class="countdown" id="countdown"></div>
+        </div>
     </div>
 
-    <div id="results-area">
-        <div class="section-label">Your Score</div>
-        <div class="emoji-row" id="emoji-row"></div>
-        <div class="legend" id="legend"></div>
-        <button class="btn-copy" onclick="shareScore()">Share Score 📋</button>
-        <div class="countdown" id="countdown"></div>
+    <!-- INFINITY MODE -->
+    <div id="infinity-mode" style="width:100%; display:none;">
+        <div id="inf-game-area" style="width:100%;">
+            <div id="inf-loading">🌍 Finding cities around the globe...</div>
+            <div id="inf-cards"></div>
+            <button class="btn-go hidden" id="inf-btn-submit" onclick="infSubmitGuesses()">Submit Guesses</button>
+        </div>
+
+        <div id="inf-results-area" style="display:none;">
+            <div class="section-label">Round Result</div>
+            <div class="score-points" id="inf-score-points">
+                <div class="pts-number" id="inf-pts-number">—</div>
+                <div class="pts-label">points (lower is better)</div>
+            </div>
+            <div class="emoji-row" id="inf-emoji-row"></div>
+            <div class="legend" id="inf-legend"></div>
+            <button class="btn-copy" onclick="infShareScore()">Share Score 📋</button>
+            <button class="btn-next" onclick="infNextRound()">Next Round ∞</button>
+        </div>
     </div>
 </div>
 
@@ -682,10 +784,15 @@
     <div id="results-modal-content" onclick="event.stopPropagation()">
         <div class="modal-handle"></div>
         <button class="modal-close" onclick="closeResultsModal()" aria-label="Close">✕</button>
-        <div class="section-label">Your Score</div>
+        <div class="section-label" id="modal-title">Your Score</div>
+        <div class="score-points" id="modal-score-points">
+            <div class="pts-number" id="modal-pts-number">—</div>
+            <div class="pts-label">points (lower is better)</div>
+        </div>
         <div class="emoji-row" id="emoji-row-modal"></div>
         <div class="legend" id="legend-modal"></div>
-        <button class="btn-copy" onclick="shareScore()">Share Score 📋</button>
+        <button class="btn-copy" id="modal-share-btn" onclick="shareScore()">Share Score 📋</button>
+        <button class="btn-next hidden" id="modal-next-btn" onclick="closeResultsModal(); infNextRound();">Next Round ∞</button>
         <div class="countdown" id="countdown-modal"></div>
     </div>
 </div>
@@ -772,6 +879,14 @@ let cities = [], weather = [];
 let localData = null;
 let localCity = "";
 let played = false;
+let totalPoints = 0; // sum of absolute diffs for daily
+
+// Infinity mode state
+let currentMode = 'daily';
+let infCities = [], infWeather = [];
+let infPlayed = false;
+let infTotalPoints = 0;
+let allCitiesData = null; // cached cities.json
 
 // ── Dark Mode ──
 function initTheme() {
@@ -1019,8 +1134,8 @@ async function init() {
     // Load cities
     try {
         const res = await fetch(CITIES_URL);
-        const all = await res.json();
-        const chosen = pickCities(all);
+        allCitiesData = await res.json();
+        const chosen = pickCities(allCitiesData);
         const container = document.getElementById('cards');
 
         for (let i = 0; i < chosen.length; i++) {
@@ -1065,6 +1180,25 @@ async function init() {
 }
 
 // ──────────────────────────────────────────
+// Mode switching
+// ──────────────────────────────────────────
+function switchMode(mode) {
+    currentMode = mode;
+    document.getElementById('tab-daily').classList.toggle('active', mode === 'daily');
+    document.getElementById('tab-infinity').classList.toggle('active', mode === 'infinity');
+    document.getElementById('daily-mode').style.display = mode === 'daily' ? '' : 'none';
+    document.getElementById('infinity-mode').style.display = mode === 'infinity' ? '' : 'none';
+    document.getElementById('streak-badge-wrap').style.display = mode === 'daily' ? '' : 'none';
+
+    if (mode === 'daily') {
+        document.getElementById('section-label').textContent = played ? "Today's Result" : "Today's Cities";
+    } else {
+        document.getElementById('section-label').textContent = infPlayed ? "Round Result" : "∞ Infinity Mode";
+        if (!infPlayed && infCities.length === 0) infStartRound();
+    }
+}
+
+// ──────────────────────────────────────────
 // Scoring
 // ──────────────────────────────────────────
 function diffClass(d) {
@@ -1082,8 +1216,22 @@ function diffEmoji(d) {
     return '⬛';
 }
 
+function legendHTML() {
+    return `
+        <span>🌟 Exact</span>
+        <span><span class="dot" style="background:var(--green)"></span> ±2°</span>
+        <span><span class="dot" style="background:var(--yellow)"></span> ±5°</span>
+        <span><span class="dot" style="background:var(--red)"></span> ±10°</span>
+        <span>⬛ >10°</span>
+    `;
+}
+
+// ──────────────────────────────────────────
+// Daily: Submit
+// ──────────────────────────────────────────
 function submitGuesses() {
     const emojis = [];
+    totalPoints = 0;
 
     for (let i = 0; i < 3; i++) {
         const raw = document.getElementById(`input-${i}`).value.trim();
@@ -1094,6 +1242,7 @@ function submitGuesses() {
         const guessCelsius = unit === 'F' ? f2c(guessInUnit) : guessInUnit;
         const actual = weather[i].max;
         const diff = Math.abs(guessCelsius - actual);
+        totalPoints += diff;
         const cls = diffClass(diff);
         emojis.push(diffEmoji(diff));
 
@@ -1124,18 +1273,16 @@ function submitGuesses() {
     const score = emojis.join('');
     localStorage.setItem('weathrle_date', today.toString());
     localStorage.setItem('weathrle_score', score);
+    localStorage.setItem('weathrle_points', totalPoints.toString());
 
     // Update streak using day numbers
     const lastDayNum = parseInt(localStorage.getItem('weathrle_last_date') || '0');
     let streak = getStreak();
     if (lastDayNum === today - 1 || lastDayNum === 0) {
-        // Yesterday or first time playing
         streak++;
     } else if (lastDayNum !== today) {
-        // Missed a day or more
         streak = 1;
     }
-    // If lastDayNum === today, don't change streak (already played today)
     localStorage.setItem('weathrle_streak', streak.toString());
     localStorage.setItem('weathrle_last_date', today.toString());
     updateStreakDisplay();
@@ -1147,7 +1294,7 @@ function submitGuesses() {
     }));
     localStorage.setItem('weathrle_cities', JSON.stringify(saved));
 
-    setTimeout(() => showResults(score), 800);
+    setTimeout(() => showResults(score, totalPoints), 800);
 }
 
 function restoreResults() {
@@ -1155,6 +1302,12 @@ function restoreResults() {
     updateStreakDisplay();
     const score = localStorage.getItem('weathrle_score') || '';
     const saved = JSON.parse(localStorage.getItem('weathrle_cities') || '[]');
+    totalPoints = parseInt(localStorage.getItem('weathrle_points') || '0');
+
+    // Recalculate points if not saved
+    if (!localStorage.getItem('weathrle_points') && saved.length) {
+        totalPoints = saved.reduce((sum, c) => sum + Math.abs(c.gC - c.max), 0);
+    }
 
     const container = document.getElementById('cards');
     container.innerHTML = '';
@@ -1203,32 +1356,29 @@ function restoreResults() {
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('btn-submit').classList.add('hidden');
-    showResults(score);
+    showResults(score, totalPoints);
 }
 
-function showResults(score) {
+function showResults(score, points) {
     document.getElementById('section-label').textContent = "Today's Result";
-    
-    // Check if mobile
+
     const isMobile = window.innerWidth < 768;
-    
+    const isPerfect = points === 0;
+
     if (isMobile) {
-        // Show modal on mobile
         document.body.classList.add('modal-open');
         document.getElementById('results-modal').style.display = 'block';
-        
-        const rowModal = document.getElementById('emoji-row-modal');
-        rowModal.innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
-        
-        document.getElementById('legend-modal').innerHTML = `
-            <span>🌟 Exact</span>
-            <span><span class="dot" style="background:var(--green)"></span> ±2°</span>
-            <span><span class="dot" style="background:var(--yellow)"></span> ±5°</span>
-            <span><span class="dot" style="background:var(--red)"></span> ±10°</span>
-            <span>⬛ >10°</span>
-        `;
-        
-        // Countdown for modal
+
+        document.getElementById('modal-title').textContent = 'Your Score';
+        const ptsEl = document.getElementById('modal-score-points');
+        ptsEl.className = 'score-points' + (isPerfect ? ' perfect' : '');
+        document.getElementById('modal-pts-number').textContent = points + 'pts';
+        document.getElementById('emoji-row-modal').innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
+        document.getElementById('legend-modal').innerHTML = legendHTML();
+        document.getElementById('modal-share-btn').onclick = shareScore;
+        document.getElementById('modal-next-btn').classList.add('hidden');
+        document.getElementById('countdown-modal').style.display = '';
+
         function tickModal() {
             const now = new Date();
             const midnight = new Date(now);
@@ -1242,21 +1392,13 @@ function showResults(score) {
         tickModal();
         setInterval(tickModal, 1000);
     } else {
-        // Show regular results on desktop
         document.getElementById('results-area').style.display = 'block';
-        
-        const row = document.getElementById('emoji-row');
-        row.innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
-        
-        document.getElementById('legend').innerHTML = `
-            <span>🌟 Exact</span>
-            <span><span class="dot" style="background:var(--green)"></span> ±2°</span>
-            <span><span class="dot" style="background:var(--yellow)"></span> ±5°</span>
-            <span><span class="dot" style="background:var(--red)"></span> ±10°</span>
-            <span>⬛ >10°</span>
-        `;
-        
-        // Countdown for regular view
+        const ptsEl = document.getElementById('score-points');
+        ptsEl.className = 'score-points' + (isPerfect ? ' perfect' : '');
+        document.getElementById('pts-number').textContent = points + 'pts';
+        document.getElementById('emoji-row').innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
+        document.getElementById('legend').innerHTML = legendHTML();
+
         function tick() {
             const now = new Date();
             const midnight = new Date(now);
@@ -1277,7 +1419,6 @@ function showResults(score) {
 }
 
 function closeResultsModal(event) {
-    // Only close if clicking on backdrop or close button
     if (event && event.target.id !== 'results-modal' && event.type === 'click') return;
     document.getElementById('results-modal').style.display = 'none';
     document.body.classList.remove('modal-open');
@@ -1286,27 +1427,222 @@ function closeResultsModal(event) {
 function shareScore() {
     const score = localStorage.getItem('weathrle_score') || '';
     const streak = getStreak();
+    const pts = localStorage.getItem('weathrle_points') || totalPoints;
     const msg = score === '🌟🌟🌟' ? '🏆 Perfect score!' : 'My WEATHRLE today:';
-    
+
     let locationLine = '';
     if (localData && localData.max !== 0) {
         locationLine = `\n📍 My location: ${dT(localData.min)}°-${dT(localData.max)}${uL()}`;
     }
-    
-    const text = `${msg}\n\n${score}${locationLine}\n\n🔥 Streak: ${streak}\nhttps://weathrle.com`;
 
-    // Use native share sheet on mobile, clipboard on desktop
+    const text = `${msg}\n\n${score}  ${pts}pts${locationLine}\n\n🔥 Streak: ${streak}\nhttps://weathrle.com`;
+
     if (navigator.share && window.innerWidth < 768) {
         navigator.share({ text }).catch(() => {});
     } else {
         navigator.clipboard.writeText(text).then(() => {
-            const btns = document.querySelectorAll('.btn-copy');
+            const btns = document.querySelectorAll('#daily-mode .btn-copy, #results-modal .btn-copy');
             btns.forEach(btn => {
                 btn.textContent = 'Copied! ✅';
                 setTimeout(() => btn.textContent = 'Share Score 📋', 2000);
             });
         });
     }
+}
+
+// ──────────────────────────────────────────
+// Infinity Mode
+// ──────────────────────────────────────────
+function pickCitiesRandom(all) {
+    const valid = all.filter(c => c.country && c.lat && c.lng && c.name);
+    // Fisher-Yates with Math.random
+    const shuffled = valid.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const picked = [], usedCountries = new Set(), usedContinents = new Set();
+    for (const c of shuffled) {
+        const cc = c.country.toUpperCase();
+        if (usedCountries.has(cc)) continue;
+        const cont = getContinent(parseFloat(c.lat), parseFloat(c.lng), cc);
+        if (usedContinents.has(cont)) continue;
+        if (picked.some(p => haversine(parseFloat(c.lat), parseFloat(c.lng), parseFloat(p.lat), parseFloat(p.lng)) < 2000)) continue;
+        picked.push(c);
+        usedCountries.add(cc);
+        usedContinents.add(cont);
+        if (picked.length === 3) break;
+    }
+    return picked;
+}
+
+async function infStartRound() {
+    infCities = [];
+    infWeather = [];
+    infPlayed = false;
+    infTotalPoints = 0;
+
+    const container = document.getElementById('inf-cards');
+    container.innerHTML = '';
+    document.getElementById('inf-loading').style.display = '';
+    document.getElementById('inf-results-area').style.display = 'none';
+    document.getElementById('inf-btn-submit').classList.add('hidden');
+    document.getElementById('section-label').textContent = '∞ Infinity Mode';
+
+    try {
+        if (!allCitiesData) {
+            const res = await fetch(CITIES_URL);
+            allCitiesData = await res.json();
+        }
+        const chosen = pickCitiesRandom(allCitiesData);
+
+        for (let i = 0; i < chosen.length; i++) {
+            const city = chosen[i];
+            infCities.push(city);
+            const w = await fetchW(city.lat, city.lng);
+            infWeather.push(w);
+
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.id = `inf-card-${i}`;
+            div.innerHTML = `
+                <div class="card-top">
+                    <div class="city-id">
+                        <span class="flag">${flag(city.country)}</span>
+                        <div class="city-text">
+                            <span class="name">${city.name}</span>
+                            <span class="country-name">${countryName(city.country)}</span>
+                        </div>
+                    </div>
+                    <div class="temp-input-wrap">
+                        <input type="text" class="temp-input" id="inf-input-${i}" placeholder="—" inputmode="numeric" maxlength="4" autocomplete="off">
+                        <span class="deg">°</span>
+                    </div>
+                </div>
+                <div class="hint-row">
+                    <span class="hint-tag">${climateHint(city.lat)}</span>
+                    <span class="hint-tag">${hemisphereHint(city.lat)}</span>
+                </div>
+                <div class="card-reveal" id="inf-reveal-${i}"></div>
+            `;
+            container.appendChild(div);
+            sanitizeInput(document.getElementById(`inf-input-${i}`));
+        }
+
+        document.getElementById('inf-loading').style.display = 'none';
+        document.getElementById('inf-btn-submit').classList.remove('hidden');
+    } catch (e) {
+        document.getElementById('inf-loading').textContent = "Connection error. Please refresh.";
+        console.error(e);
+    }
+}
+
+function infSubmitGuesses() {
+    const emojis = [];
+    infTotalPoints = 0;
+
+    for (let i = 0; i < 3; i++) {
+        const raw = document.getElementById(`inf-input-${i}`).value.trim();
+        if (raw === '' || raw === '-') { alert("Please fill in all guesses!"); return; }
+        const guessInUnit = parseInt(raw);
+        if (isNaN(guessInUnit)) { alert("Please enter valid numbers!"); return; }
+
+        const guessCelsius = unit === 'F' ? f2c(guessInUnit) : guessInUnit;
+        const actual = infWeather[i].max;
+        const diff = Math.abs(guessCelsius - actual);
+        infTotalPoints += diff;
+        const cls = diffClass(diff);
+        emojis.push(diffEmoji(diff));
+
+        const actualInUnit = dT(actual);
+        const diffInUnit = guessInUnit - actualInUnit;
+        const badge = diff === 0 ? 'EXACT!' : (diffInUnit > 0 ? '+' : '') + diffInUnit + '°';
+
+        const reveal = document.getElementById(`inf-reveal-${i}`);
+        reveal.innerHTML = `
+            <div class="reveal-row">
+                <div>
+                    <span class="reveal-actual">${infWeather[i].icon} Actual: ${dT(actual)}${uL()}</span>
+                    <span class="reveal-detail"> · Low: ${dT(infWeather[i].min)}${uL()} · ${infWeather[i].desc}</span>
+                </div>
+                <span class="diff-pill ${cls}">${badge}</span>
+            </div>
+        `;
+        reveal.classList.add('show');
+        document.getElementById(`inf-card-${i}`).classList.add('revealed', cls);
+        document.getElementById(`inf-input-${i}`).disabled = true;
+    }
+
+    infPlayed = true;
+    document.getElementById('inf-btn-submit').classList.add('hidden');
+
+    const score = emojis.join('');
+    setTimeout(() => infShowResults(score, infTotalPoints), 800);
+}
+
+function infShowResults(score, points) {
+    document.getElementById('section-label').textContent = 'Round Result';
+    const isPerfect = points === 0;
+    const isMobile = window.innerWidth < 768;
+
+    if (isMobile) {
+        document.body.classList.add('modal-open');
+        document.getElementById('results-modal').style.display = 'block';
+
+        document.getElementById('modal-title').textContent = '∞ Round Result';
+        const ptsEl = document.getElementById('modal-score-points');
+        ptsEl.className = 'score-points' + (isPerfect ? ' perfect' : '');
+        document.getElementById('modal-pts-number').textContent = points + 'pts';
+        document.getElementById('emoji-row-modal').innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
+        document.getElementById('legend-modal').innerHTML = legendHTML();
+        document.getElementById('modal-share-btn').onclick = infShareScore;
+        document.getElementById('modal-next-btn').classList.remove('hidden');
+        document.getElementById('countdown-modal').style.display = 'none';
+    } else {
+        document.getElementById('inf-results-area').style.display = 'block';
+        const ptsEl = document.getElementById('inf-score-points');
+        ptsEl.className = 'score-points' + (isPerfect ? ' perfect' : '');
+        document.getElementById('inf-pts-number').textContent = points + 'pts';
+        document.getElementById('inf-emoji-row').innerHTML = Array.from(score).map(e => `<span class="emoji-tile">${e}</span>`).join('');
+        document.getElementById('inf-legend').innerHTML = legendHTML();
+    }
+
+    // Store last infinity score for sharing
+    window._lastInfScore = score;
+    window._lastInfPoints = points;
+
+    if (score === '🌟🌟🌟') {
+        confetti({ particleCount: 250, spread: 100, origin: { y: 0.55 } });
+    }
+}
+
+function infShareScore() {
+    const score = window._lastInfScore || '';
+    const points = window._lastInfPoints || 0;
+    const msg = score === '🌟🌟🌟' ? '🏆 Perfect score!' : 'My WEATHRLE ∞ round:';
+
+    let locationLine = '';
+    if (localData && localData.max !== 0) {
+        locationLine = `\n📍 My location: ${dT(localData.min)}°-${dT(localData.max)}${uL()}`;
+    }
+
+    const text = `${msg}\n\n${score}  ${points}pts${locationLine}\n\nhttps://weathrle.com`;
+
+    if (navigator.share && window.innerWidth < 768) {
+        navigator.share({ text }).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(text).then(() => {
+            const btns = document.querySelectorAll('#infinity-mode .btn-copy, #results-modal .btn-copy');
+            btns.forEach(btn => {
+                btn.textContent = 'Copied! ✅';
+                setTimeout(() => btn.textContent = 'Share Score 📋', 2000);
+            });
+        });
+    }
+}
+
+function infNextRound() {
+    infStartRound();
 }
 
 init();
